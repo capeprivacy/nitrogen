@@ -41,6 +41,9 @@ enum Commands {
         // Dockerfile location
         #[arg(short, long)]
         dockerfile: String,
+        // docker context directory
+        #[arg(short, long)]
+        context: String,
         // Output EIF location
         #[arg(short, long)]
         eif: String,
@@ -141,9 +144,13 @@ async fn main() -> Result<(), Error> {
             );
             Ok(())
         }
-        Commands::Build { dockerfile, eif } => {
+        Commands::Build {
+            dockerfile,
+            context,
+            eif,
+        } => {
             Command::new("docker")
-                .args(["build", "-t", "nitrogen-build", ".", "-f", &dockerfile])
+                .args(["build", "-t", "nitrogen-build", &context, "-f", &dockerfile])
                 .output()
                 .await
                 .expect("failed to build docker image");
