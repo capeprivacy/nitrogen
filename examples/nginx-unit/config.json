@@ -1,0 +1,15 @@
+{
+  "listeners": {
+    "127.0.0.1:8000": {
+      "pass": "routes"
+    }
+  },
+
+  "routes": [
+    {
+      "action": {
+        "share": "/www/static/$uri"
+      }
+    }
+  ]
+}
