@@ -1,10 +1,10 @@
 use failure::Error;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 use aws_sdk_cloudformation::{Client, Region};
 use clap::{Parser, Subcommand};
 use home;
-use nitro_cli::build_from_docker;
+use std::env;
 use tokio::fs;
 use tokio::process::Command;
 
@@ -85,16 +85,13 @@ async fn main() -> Result<(), Error> {
             let launch_template =
                 fs::read_to_string(Path::new("src/templates/launchTemplate.json")).await?;
         }
-        Commands::Build { dockerfile, .. } => {
+        Commands::Build { dockerfile, eif } => {
             Command::new("docker")
                 .args(["build", "-t", "nitrogen-build", ".", "-f", &dockerfile])
                 .output()
                 .await
                 .expect("failed to build docker image");
-
-            // docker run -v ~/.docker:/root/.docker -v /var/run/docker.sock:/var/run/docker.sock capeprivacy/eif-builder build-enclave --docker-uri docker.io/capeprivacy/runtime:release-ffc4e1c --output-file runtime.eif
-
-            let h = home::home_dir().unwrap();
+            let h = home::home_dir().unwrap_or_default();
             let out = Command::new("docker")
                 .args([
                     "run",
@@ -102,16 +99,20 @@ async fn main() -> Result<(), Error> {
                     &format!("{}/.docker:/root/.docker", h.display()),
                     "-v",
                     "/var/run/docker.sock:/var/run/docker.sock",
+                    "-v",
+                    &format!(
+                        "{}:/root/build",
+                        env::current_dir()?.to_str().unwrap_or("")
+                    ),
                     "capeprivacy/eif-builder:latest",
                     "build-enclave",
                     "--docker-uri",
                     "nitrogen-build",
                     "--output-file",
-                    "runtime.eif",
+                    &format!("/root/build/{}", eif),
                 ])
                 .output()
-                .await
-                .unwrap();
+                .await?;
             println!("{:?}", out);
             Ok(())
         }
