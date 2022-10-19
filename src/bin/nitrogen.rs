@@ -50,6 +50,12 @@ enum Commands {
         // Filepath to EIF
         eif: String,
     },
+
+    /// Delete launched ec2 instance
+    Delete {
+        /// Name of the provisioned instance
+        instance: String,
+    },
 }
 
 #[tokio::main]
@@ -74,6 +80,9 @@ async fn main() -> Result<(), Error> {
         }
         Commands::Deploy{..} => {
             todo!("implement deploy command logic");
+        }
+        Commands::Delete{..} => {
+            todo!("implement delete command logic");
         }
     }
 }
