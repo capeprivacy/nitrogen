@@ -7,6 +7,7 @@ A command line interface to build and deploy web services to AWS Nitro Enclaves.
 - `nitrogen launch <ec2-instance-type> <port>`
 - `nitrogen build <Dockerfile>`
 - `nitrogen deploy <enclave-image-file> <ec2-hostname>`
+- `nitrogen delete <ec2-hostname>`
 
 ## Features
 
