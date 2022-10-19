@@ -3,7 +3,10 @@ use std::path::Path;
 
 use aws_sdk_cloudformation::{model::Parameter, output::CreateStackOutput, Client};
 use clap::{Parser, Subcommand};
+use home;
+use std::env;
 use tokio::fs;
+use tokio::process::Command;
 
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
@@ -138,13 +141,38 @@ async fn main() -> Result<(), Error> {
             );
             Ok(())
         }
-        Commands::Build { .. } => {
-            todo!("implement build command logic");
+        Commands::Build { dockerfile, eif } => {
+            Command::new("docker")
+                .args(["build", "-t", "nitrogen-build", ".", "-f", &dockerfile])
+                .output()
+                .await
+                .expect("failed to build docker image");
+            let h = home::home_dir().unwrap_or_default();
+            let out = Command::new("docker")
+                .args([
+                    "run",
+                    "-v",
+                    &format!("{}/.docker:/root/.docker", h.display()),
+                    "-v",
+                    "/var/run/docker.sock:/var/run/docker.sock",
+                    "-v",
+                    &format!("{}:/root/build", env::current_dir()?.to_str().unwrap_or("")),
+                    "capeprivacy/eif-builder:latest",
+                    "build-enclave",
+                    "--docker-uri",
+                    "nitrogen-build",
+                    "--output-file",
+                    &format!("/root/build/{}", eif),
+                ])
+                .output()
+                .await?;
+            println!("{:?}", out);
+            Ok(())
         }
         Commands::Deploy { .. } => {
             todo!("implement deploy command logic");
         }
-        Commands::Delete{..} => {
+        Commands::Delete { .. } => {
             todo!("implement delete command logic");
         }
     }
