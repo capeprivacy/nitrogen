@@ -1,6 +1,6 @@
 # Nitrogen CLI
 
-A command line interface to build and deploy web services to AWS Nitro Enclaves.
+Nitrogen is a tool for deploying web services to AWS Nitro Enclaves.
 
 ## Commands
 
