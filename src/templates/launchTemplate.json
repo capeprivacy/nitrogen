@@ -18,8 +18,8 @@
     "InstanceType" : {
       "Description" : "Type of the ec2 instance",
       "Type" : "String",
-      "AllowedValues" : [ "m5.xlarge"],
-      "ConstraintDescription" : "must be a valid EC2 instance type that supports Nitro Enclaves, m5.xlarge and larger."
+      "AllowedValues" : [ "m5a.xlarge"],
+      "ConstraintDescription" : "must be a valid EC2 instance type that supports Nitro Enclaves, m5a.xlarge and larger."
     },
 
     "SSHLocation" : {
@@ -34,37 +34,45 @@
 
   "Mappings" : {
     "AWSInstanceType2Arch" : {
-      "m5.xlarge"    : { "Arch" : "HVM64"  }
+      "m5a.xlarge"    : { "Arch" : "HVM64"  },
+      "m5a.2xlarge"   : { "Arch" : "HVM64"  },
+      "m5a.4xlarge"   : { "Arch" : "HVM64"  },
+      "m5a.8xlarge"   : { "Arch" : "HVM64"  },
+      "m5a.12xlarge"  : { "Arch" : "HVM64"  }
     },
 
     "AWSInstanceType2NATArch" : {
-      "m5.xlarge"    : { "Arch" : "NATHVM64"  }
+      "m5a.xlarge"    : { "Arch" : "NATHVM64"  },
+      "m5a.2xlarge"   : { "Arch" : "NATHVM64"  },
+      "m5a.4xlarge"   : { "Arch" : "NATHVM64"  },
+      "m5a.8xlarge"   : { "Arch" : "NATHVM64"  },
+      "m5a.12xlarge"  : { "Arch" : "NATHVM64"  }
     }
 ,
     "AWSRegionArch2AMI" : {
-      "af-south-1"       : {"HVM64" : "ami-064cc455f8a1ef504", "HVMG2" : "NOT_SUPPORTED"},
-      "ap-east-1"        : {"HVM64" : "ami-f85b1989", "HVMG2" : "NOT_SUPPORTED"},
-      "ap-northeast-1"   : {"HVM64" : "ami-0b2c2a754d5b4da22", "HVMG2" : "ami-09d0e0e099ecabba2"},
-      "ap-northeast-2"   : {"HVM64" : "ami-0493ab99920f410fc", "HVMG2" : "NOT_SUPPORTED"},
-      "ap-northeast-3"   : {"HVM64" : "ami-01344f6f63a4decc1", "HVMG2" : "NOT_SUPPORTED"},
-      "ap-south-1"       : {"HVM64" : "ami-03cfb5e1fb4fac428", "HVMG2" : "ami-0244c1d42815af84a"},
-      "ap-southeast-1"   : {"HVM64" : "ami-0ba35dc9caf73d1c7", "HVMG2" : "ami-0e46ce0d6a87dc979"},
-      "ap-southeast-2"   : {"HVM64" : "ami-0ae99b503e8694028", "HVMG2" : "ami-0c0ab057a101d8ff2"},
-      "ca-central-1"     : {"HVM64" : "ami-0803e21a2ec22f953", "HVMG2" : "NOT_SUPPORTED"},
-      "cn-north-1"       : {"HVM64" : "ami-07a3f215cc90c889c", "HVMG2" : "NOT_SUPPORTED"},
-      "cn-northwest-1"   : {"HVM64" : "ami-0a3b3b10f714a0ff4", "HVMG2" : "NOT_SUPPORTED"},
-      "eu-central-1"     : {"HVM64" : "ami-0474863011a7d1541", "HVMG2" : "ami-0aa1822e3eb913a11"},
-      "eu-north-1"       : {"HVM64" : "ami-0de4b8910494dba0f", "HVMG2" : "ami-32d55b4c"},
-      "eu-south-1"       : {"HVM64" : "ami-08427144fe9ebdef6", "HVMG2" : "NOT_SUPPORTED"},
-      "eu-west-1"        : {"HVM64" : "ami-015232c01a82b847b", "HVMG2" : "ami-0d5299b1c6112c3c7"},
-      "eu-west-2"        : {"HVM64" : "ami-0765d48d7e15beb93", "HVMG2" : "NOT_SUPPORTED"},
-      "eu-west-3"        : {"HVM64" : "ami-0caf07637eda19d9c", "HVMG2" : "NOT_SUPPORTED"},
-      "me-south-1"       : {"HVM64" : "ami-0744743d80915b497", "HVMG2" : "NOT_SUPPORTED"},
-      "sa-east-1"        : {"HVM64" : "ami-0a52e8a6018e92bb0", "HVMG2" : "NOT_SUPPORTED"},
-      "us-east-1"        : {"HVM64" : "ami-032930428bf1abbff", "HVMG2" : "ami-0aeb704d503081ea6"},
-      "us-east-2"        : {"HVM64" : "ami-027cab9a7bf0155df", "HVMG2" : "NOT_SUPPORTED"},
-      "us-west-1"        : {"HVM64" : "ami-088c153f74339f34c", "HVMG2" : "ami-0a7fc72dc0e51aa77"},
-      "us-west-2"        : {"HVM64" : "ami-01fee56b22f308154", "HVMG2" : "ami-0fe84a5b4563d8f27"}
+      "af-south-1"       : {"HVM64" : ""},
+      "ap-east-1"        : {"HVM64" : ""},
+      "ap-northeast-1"   : {"HVM64" : "ami-078296f82eb463377"},
+      "ap-northeast-2"   : {"HVM64" : "ami-0c76973fbe0ee100c"},
+      "ap-northeast-3"   : {"HVM64" : "ami-0953215c6a0ce5164"},
+      "ap-south-1"       : {"HVM64" : "ami-01216e7612243e0ef"},
+      "ap-southeast-1"   : {"HVM64" : "ami-0f62d9254ca98e1aa"},
+      "ap-southeast-2"   : {"HVM64" : "ami-067e6178c7a211324"},
+      "ca-central-1"     : {"HVM64" : "ami-046a5648dee483245"},
+      "cn-north-1"       : {"HVM64" : ""},
+      "cn-northwest-1"   : {"HVM64" : ""},
+      "eu-central-1"     : {"HVM64" : "ami-05ff5eaef6149df49"},
+      "eu-north-1"       : {"HVM64" : "ami-0bcf2639b551f6b31"},
+      "eu-south-1"       : {"HVM64" : ""},
+      "eu-west-1"        : {"HVM64" : "ami-0ea0f26a6d50850c5"},
+      "eu-west-2"        : {"HVM64" : "ami-06672d07f62285d1d"},
+      "eu-west-3"        : {"HVM64" : "ami-0ddab716196087271"},
+      "me-south-1"       : {"HVM64" : ""},
+      "sa-east-1"        : {"HVM64" : "ami-0895310529c333a0c"},
+      "us-east-1"        : {"HVM64" : "ami-026b57f3c383c2eec"},
+      "us-east-2"        : {"HVM64" : "ami-0f924dc71d44d23e2"},
+      "us-west-1"        : {"HVM64" : "ami-09208e69ff3feb1db"},
+      "us-west-2"        : {"HVM64" : "ami-08e2d37b6a0129927"}
     }
   },
 
@@ -80,7 +88,8 @@
             },
             "Install": {
                 "packages": {
-                    "docker": []
+                    "docker": [],
+                    "aws-nitro-enclaves-cli": []
                 },
                 "services": {
                     "sysvinit": {
@@ -92,7 +101,10 @@
                 },
                 "commands": {
                     "docker_for_ec2_user": {
-                        "command": "usermod -G docker ec2-user"
+                        "command": "usermod -aG docker ec2-user"
+                    },
+                    "nitro_cli_for_ec2_user": {
+                        "command": "usermod -aG ne ec2-user"
                     }
                 }
             }
@@ -109,7 +121,30 @@
         },
         "Tags" : [
             {"Key" : "Name", "Value" : { "Ref": "InstanceName"}}
-        ]
+        ],
+        "UserData": {
+          "Fn::Base64":{
+            "Fn::Join":[
+              "",
+              [
+                "#!/bin/bash -xe\n",
+                "yum install -y aws-cfn-bootstrap\n",
+                "amazon-linux-extras enable aws-nitro-enclaves-cli\n",
+                "# Install the files and packages from the metadata\n",
+                "/opt/aws/bin/cfn-init -v ",
+                "         --stack ",
+                { "Ref":"AWS::StackName" },
+                "         --resource EC2Instance ",
+                "         --configsets Install ",
+                "         --region ",
+                { "Ref":"AWS::Region" },
+                "\n",
+                "systemctl start nitro-enclaves-allocator.service && sudo systemctl enable nitro-enclaves-allocator.service\n",
+                "systemctl start docker && sudo systemctl enable docker\n"
+              ]
+            ]
+          }
+        }
       }
     },
 
@@ -117,12 +152,20 @@
       "Type" : "AWS::EC2::SecurityGroup",
       "Properties" : {
         "GroupDescription" : "Enable SSH access via port 22",
-        "SecurityGroupIngress" : [ {
-          "IpProtocol" : "tcp",
-          "FromPort" : "22",
-          "ToPort" : "22",
-          "CidrIp" : { "Ref" : "SSHLocation"}
-        } ]
+        "SecurityGroupIngress" : [ 
+          {
+            "IpProtocol" : "tcp",
+            "FromPort" : "22",
+            "ToPort" : "22",
+            "CidrIp" : { "Ref" : "SSHLocation"}
+          },
+          {
+            "IpProtocol" : "tcp", 
+            "FromPort" : 80, 
+            "ToPort" : 80, 
+            "CidrIp" : "0.0.0.0/0"
+          } 
+        ]
       }
     }
   },
