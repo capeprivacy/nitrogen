@@ -1,3 +1,4 @@
+use aws_sdk_cloudformation::model::StackStatus;
 use failure::Error;
 use std::path::Path;
 
@@ -106,13 +107,17 @@ async fn launch_stack(
     Ok(stack_output)
 }
 
-async fn _check_stack(client: &Client, stack_output: &CreateStackOutput) -> Result<(), Error> {
+async fn check_stack_status(
+    client: &Client,
+    stack_output: &CreateStackOutput,
+) -> Result<(StackStatus, String), Error> {
     // TODO
     let stack_id = stack_output.stack_id().unwrap();
     let resp = client.describe_stacks().stack_name(stack_id).send().await?;
     let this_stack = resp.stacks().unwrap_or_default().first().unwrap();
-    let _stack_status = this_stack.stack_status();
-    Ok(())
+    let stack_status = this_stack.stack_status().unwrap();
+    let stack_status_reason = this_stack.stack_status_reason().unwrap_or("");
+    Ok((stack_status.clone(), stack_status_reason.to_string()))
 }
 
 #[tokio::main]
@@ -143,6 +148,28 @@ async fn main() -> Result<(), Error> {
                 &ssh_location,
             )
             .await?;
+
+            let (stack_status, stack_status_reason)  = loop {
+                let (status, status_reason) = check_stack_status(&client, &stack_output).await?;
+                tokio::time::sleep(tokio::time::Duration::new(2, 0)).await;
+                if status != StackStatus::CreateInProgress {
+                    break (status, status_reason)
+                }
+            };
+            match stack_status {
+                StackStatus::CreateComplete => {
+                    println!(
+                        "Successfully launched enclave with stack ID {:?}",
+                        stack_output.stack_id().unwrap()
+                    );
+                }
+                StackStatus::CreateFailed => {
+                    return Err(failure::err_msg("Received CreateFailed status from CloudFormation stack, please check AWS console or AWS logs for more information."))
+                }
+                other_status => {
+                    return Err(failure::err_msg(format!("{:#?}: {}", other_status, stack_status_reason)))
+                }
+            }
 
             println!(
                 "Successfully launched enclave with stack ID {:?}",
