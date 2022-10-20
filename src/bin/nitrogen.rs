@@ -48,10 +48,16 @@ enum Commands {
 
     /// Deploy an EIF to a provisioned nitro ec2 instance
     Deploy {
-        /// Name of the provisioned instance
+        /// Domain of the provisioned ec2 instance
         instance: String,
-        // Filepath to EIF
+        /// Filepath to EIF
         eif: String,
+        /// Filepath to SSH key for the instance
+        ssh_key: String,
+        /// Number of CPUs to provision for the enclave
+        cpu_count: String,
+        /// Memory in MB to provision for the enclave
+        memory: String,
     },
 
     /// Delete launched ec2 instance
@@ -169,8 +175,19 @@ async fn main() -> Result<(), Error> {
             println!("{:?}", out);
             Ok(())
         }
-        Commands::Deploy { .. } => {
-            todo!("implement deploy command logic");
+        Commands::Deploy{instance, eif, ssh_key, cpu_count, memory} => {
+            loop {
+                let _result = Command::new("ssh")
+                    .args(["-i", &ssh_key, &("ec2-user@".to_owned()+&instance)])
+                    .args(["nitro-cli", "run-enclave"])
+                    .args(["--encalve-cid", "16"])
+                    .args(["--eif-path", &eif, "--cpu-count", &cpu_count.to_string()])
+                    .args(["--memory", &memory.to_string()])
+                    .output()
+                    .expect("command failed");
+                // io::stdout().write_all(&result.stdout).unwrap();
+                // io::stderr().write_all(&result.stderr).unwrap();
+            }
         }
         Commands::Delete { .. } => {
             todo!("implement delete command logic");
