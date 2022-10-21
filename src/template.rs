@@ -88,8 +88,10 @@ pub const LAUNCH_TEMPLATE: &'static str = r##"{
             },
             "Install": {
                 "packages": {
-                    "docker": [],
-                    "aws-nitro-enclaves-cli": []
+                    "yum": {
+                      "docker": [],
+                      "aws-nitro-enclaves-cli": []
+                    }
                 },
                 "services": {
                     "sysvinit": {
@@ -139,8 +141,10 @@ pub const LAUNCH_TEMPLATE: &'static str = r##"{
                 "         --region ",
                 { "Ref":"AWS::Region" },
                 "\n",
-                "systemctl start nitro-enclaves-allocator.service && sudo systemctl enable nitro-enclaves-allocator.service\n",
-                "systemctl start docker && sudo systemctl enable docker\n"
+                "systemctl start nitro-enclaves-allocator.service && systemctl enable nitro-enclaves-allocator.service\n",
+                "systemctl start docker && systemctl enable docker\n",
+                "docker pull alpine/socat:latest\n",
+                "docker run -d --name socat alpine/socat tcp-listen:80,fork,keepalive,reuseaddr vsock-connect:16:5000,keepalive\n"
               ]
             ]
           }
