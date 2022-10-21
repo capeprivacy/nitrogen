@@ -1,6 +1,9 @@
+![Nitrogen logo](https://user-images.githubusercontent.com/404716/197253799-e37fde0d-4e88-48de-9961-adaeb759bcc0.png)
+
 # Nitrogen CLI
 
 Nitrogen is a tool for deploying web services to AWS Nitro Enclaves.
+
 
 ## Commands
 

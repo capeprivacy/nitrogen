@@ -1,13 +1,13 @@
-use aws_sdk_cloudformation::model::StackStatus;
+use aws_sdk_cloudformation::model::{Stack, StackStatus};
 use failure::Error;
-use std::path::Path;
 
 use aws_sdk_cloudformation::{model::Parameter, output::CreateStackOutput, Client};
 use clap::{Parser, Subcommand};
 use home;
 use std::env;
-use tokio::fs;
 use tokio::process::Command;
+
+include!("../template.rs");
 
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
@@ -29,7 +29,7 @@ enum Commands {
         /// EC2-instance port for socat enclave connection
         #[arg(short, long, default_value_t = 5000)]
         port: usize,
-        /// SSH key-pair
+        /// EC2 key-pair to use for the provisioned instance
         #[arg(short, long)]
         key_name: String,
         /// IP address range that can be used to SSH to the EC2 instance. Defaults to anywhere ("0.0.0.0/0").
@@ -100,21 +100,24 @@ async fn launch_stack(
         .template_body(launch_template)
         .parameters(lift_to_param("InstanceName", name))
         .parameters(lift_to_param("InstanceType", instance_type))
-        // TODO socat port parameter
+        .parameters(lift_to_param("Port", port.to_string()))
         .parameters(lift_to_param("KeyName", key_name))
         .parameters(lift_to_param("SSHLocation", ssh_location));
     let stack_output = stack.send().await?;
     Ok(stack_output)
 }
 
-async fn check_stack_status(
-    client: &Client,
-    stack_output: &CreateStackOutput,
-) -> Result<(StackStatus, String), Error> {
-    // TODO
-    let stack_id = stack_output.stack_id().unwrap();
+async fn get_stack(client: &Client, stack_id: &str) -> Result<Stack, Error> {
     let resp = client.describe_stacks().stack_name(stack_id).send().await?;
     let this_stack = resp.stacks().unwrap_or_default().first().unwrap();
+    Ok(this_stack.clone())
+}
+
+async fn check_stack_status(
+    client: &Client,
+    stack_id: &str,
+) -> Result<(StackStatus, String), Error> {
+    let this_stack = get_stack(client, stack_id).await?;
     let stack_status = this_stack.stack_status().unwrap();
     let stack_status_reason = this_stack.stack_status_reason().unwrap_or("");
     Ok((stack_status.clone(), stack_status_reason.to_string()))
@@ -133,9 +136,7 @@ async fn main() -> Result<(), Error> {
             ssh_location,
         } => {
             let ssh_location = ssh_location.unwrap_or("0.0.0.0/0".to_string());
-            // TODO bundle this template file into binary as string const w/ `build.rs`
-            let launch_template =
-                fs::read_to_string(Path::new("src/templates/launchTemplate.json")).await?;
+            let launch_template = LAUNCH_TEMPLATE.to_string();
             let shared_config = aws_config::from_env().load().await;
             let client = Client::new(&shared_config);
             let stack_output = launch_stack(
@@ -148,12 +149,20 @@ async fn main() -> Result<(), Error> {
                 &ssh_location,
             )
             .await?;
-
-            let (stack_status, stack_status_reason)  = loop {
-                let (status, status_reason) = check_stack_status(&client, &stack_output).await?;
+            let stack_id = match stack_output.stack_id() {
+                Some(x) => x,
+                None => {
+                    return Err(failure::err_msg(
+                        "Missing `stack_id` in CreateStackOutput, please check CloudFormation \
+                        logs to determine the source of the error.",
+                    ))
+                }
+            };
+            let (stack_status, stack_status_reason) = loop {
+                let (status, status_reason) = check_stack_status(&client, &stack_id).await?;
                 tokio::time::sleep(tokio::time::Duration::new(2, 0)).await;
                 if status != StackStatus::CreateInProgress {
-                    break (status, status_reason)
+                    break (status, status_reason);
                 }
             };
             match stack_status {
@@ -164,17 +173,29 @@ async fn main() -> Result<(), Error> {
                     );
                 }
                 StackStatus::CreateFailed => {
-                    return Err(failure::err_msg("Received CreateFailed status from CloudFormation stack, please check AWS console or AWS logs for more information."))
+                    return Err(failure::err_msg(
+                        "Received CreateFailed status from CloudFormation stack, please check \
+                        AWS console or AWS logs for more information.",
+                    ))
                 }
                 other_status => {
-                    return Err(failure::err_msg(format!("{:#?}: {}", other_status, stack_status_reason)))
+                    return Err(failure::err_msg(format!(
+                        "{:#?}: {}",
+                        other_status, stack_status_reason
+                    )))
                 }
             }
-
-            println!(
-                "Successfully launched enclave with stack ID {:?}",
-                stack_output.stack_id().unwrap()
-            );
+            // Stack was created successfully, report outputs to stdout
+            let this_stack = get_stack(&client, stack_id).await?;
+            // TODO handle missing outputs in this unwrap, maybe w/ warning instead of error?
+            println!("Enclave user information:");
+            for output in this_stack.outputs().unwrap() {
+                println!(
+                    "\t{}: {}",
+                    output.output_key().unwrap(),
+                    output.output_value().unwrap()
+                );
+            }
             Ok(())
         }
         Commands::Build {
