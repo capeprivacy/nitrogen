@@ -1,13 +1,13 @@
 use aws_sdk_cloudformation::model::StackStatus;
 use failure::Error;
-use std::path::Path;
 
 use aws_sdk_cloudformation::{model::Parameter, output::CreateStackOutput, Client};
 use clap::{Parser, Subcommand};
 use home;
 use std::env;
-use tokio::fs;
 use tokio::process::Command;
+
+include!("../template.rs");
 
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
@@ -29,7 +29,7 @@ enum Commands {
         /// EC2-instance port for socat enclave connection
         #[arg(short, long, default_value_t = 5000)]
         port: usize,
-        /// SSH key-pair
+        /// EC2 key-pair to use for the provisioned instance
         #[arg(short, long)]
         key_name: String,
         /// IP address range that can be used to SSH to the EC2 instance. Defaults to anywhere ("0.0.0.0/0").
@@ -128,8 +128,7 @@ async fn main() -> Result<(), Error> {
         } => {
             let ssh_location = ssh_location.unwrap_or("0.0.0.0/0".to_string());
             // TODO bundle this template file into binary as string const w/ `build.rs`
-            let launch_template =
-                fs::read_to_string(Path::new("src/templates/launchTemplate.json")).await?;
+            let launch_template = LAUNCH_TEMPLATE.to_string();
             let shared_config = aws_config::from_env().load().await;
             let client = Client::new(&shared_config);
             let stack_output = launch_stack(
@@ -166,7 +165,7 @@ async fn main() -> Result<(), Error> {
             }
 
             println!(
-                "Successfully launched enclave with stack ID {:?}",
+                "Successfully launched enclave with stack ID {:#?}",
                 stack_output.stack_id().unwrap()
             );
             Ok(())
