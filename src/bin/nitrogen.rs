@@ -142,11 +142,11 @@ async fn main() -> Result<(), Error> {
             )
             .await?;
 
-            let (stack_status, stack_status_reason)  = loop {
+            let (stack_status, stack_status_reason) = loop {
                 let (status, status_reason) = check_stack_status(&client, &stack_output).await?;
                 tokio::time::sleep(tokio::time::Duration::new(2, 0)).await;
                 if status != StackStatus::CreateInProgress {
-                    break (status, status_reason)
+                    break (status, status_reason);
                 }
             };
             match stack_status {
