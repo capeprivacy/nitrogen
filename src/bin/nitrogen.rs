@@ -127,7 +127,6 @@ async fn main() -> Result<(), Error> {
             ssh_location,
         } => {
             let ssh_location = ssh_location.unwrap_or("0.0.0.0/0".to_string());
-            // TODO bundle this template file into binary as string const w/ `build.rs`
             let launch_template = LAUNCH_TEMPLATE.to_string();
             let shared_config = aws_config::from_env().load().await;
             let client = Client::new(&shared_config);
@@ -155,20 +154,15 @@ async fn main() -> Result<(), Error> {
                         "Successfully launched enclave with stack ID {:?}",
                         stack_output.stack_id().unwrap()
                     );
+                    Ok(())
                 }
                 StackStatus::CreateFailed => {
-                    return Err(failure::err_msg("Received CreateFailed status from CloudFormation stack, please check AWS console or AWS logs for more information."))
+                    Err(failure::err_msg("Received CreateFailed status from CloudFormation stack, please check AWS console or AWS logs for more information."))
                 }
                 other_status => {
-                    return Err(failure::err_msg(format!("{:#?}: {}", other_status, stack_status_reason)))
+                    Err(failure::err_msg(format!("{:#?}: {}", other_status, stack_status_reason)))
                 }
             }
-
-            println!(
-                "Successfully launched enclave with stack ID {:#?}",
-                stack_output.stack_id().unwrap()
-            );
-            Ok(())
         }
         Commands::Build {
             dockerfile,
