@@ -231,16 +231,16 @@ async fn main() -> Result<(), Error> {
             Ok(())
         }
         Commands::Deploy{instance, eif, ssh_key, cpu_count, memory} => {
-            loop {
-                let _result = Command::new("ssh")
-                    .args(["-i", &ssh_key, &("ec2-user@".to_owned()+&instance)])
-                    .args(["nitro-cli", "run-enclave"])
-                    .args(["--encalve-cid", "16"])
-                    .args(["--eif-path", &eif, "--cpu-count", &cpu_count.to_string()])
-                    .args(["--memory", &memory.to_string()])
-                    .output()
-                    .await?;
-            }
+            let out = Command::new("ssh")
+                .args(["-i", &ssh_key, &("ec2-user@".to_owned()+&instance)])
+                .args(["nitro-cli", "run-enclave"])
+                .args(["--encalve-cid", "16"])
+                .args(["--eif-path", &eif, "--cpu-count", &cpu_count.to_string()])
+                .args(["--memory", &memory.to_string()])
+                .output()
+                .await?;
+            println!("{:?}", out);
+            Ok(())
         }
         Commands::Delete { .. } => {
             todo!("implement delete command logic");
