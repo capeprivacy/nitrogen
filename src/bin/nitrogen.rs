@@ -94,7 +94,7 @@ async fn launch_stack(
         .template_body(launch_template)
         .parameters(lift_to_param("InstanceName", name))
         .parameters(lift_to_param("InstanceType", instance_type))
-        // TODO socat port parameter
+        .parameters(lift_to_param("Port", port.to_string()))
         .parameters(lift_to_param("KeyName", key_name))
         .parameters(lift_to_param("SSHLocation", ssh_location));
     let stack_output = stack.send().await?;
