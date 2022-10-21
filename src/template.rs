@@ -16,6 +16,13 @@ pub const LAUNCH_TEMPLATE: &'static str = r##"{
         "Type": "String"
     },
 
+    "Port": {
+        "Description": "Port to be opened in the security policy for TCP requests",
+        "Type": "Number",
+        "MinValue": 0,
+        "MaxValue": 65536
+    },
+
     "InstanceType" : {
       "Description" : "Type of the ec2 instance",
       "Type" : "String",
@@ -145,7 +152,9 @@ pub const LAUNCH_TEMPLATE: &'static str = r##"{
                 "systemctl start nitro-enclaves-allocator.service && systemctl enable nitro-enclaves-allocator.service\n",
                 "systemctl start docker && systemctl enable docker\n",
                 "docker pull alpine/socat:latest\n",
-                "docker run -d --name socat alpine/socat tcp-listen:80,fork,keepalive,reuseaddr vsock-connect:16:5000,keepalive\n"
+                "docker run -d --name socat alpine/socat tcp-listen:",
+                { "Ref" : "Port" },
+                ",fork,keepalive,reuseaddr vsock-connect:16:5000,keepalive\n"
               ]
             ]
           }
@@ -166,8 +175,8 @@ pub const LAUNCH_TEMPLATE: &'static str = r##"{
           },
           {
             "IpProtocol" : "tcp", 
-            "FromPort" : 80, 
-            "ToPort" : 80, 
+            "FromPort" : { "Ref" : "Port" }, 
+            "ToPort" : { "Ref" : "Port" }, 
             "CidrIp" : "0.0.0.0/0"
           } 
         ]
