@@ -239,9 +239,7 @@ async fn main() -> Result<(), Error> {
                     .args(["--eif-path", &eif, "--cpu-count", &cpu_count.to_string()])
                     .args(["--memory", &memory.to_string()])
                     .output()
-                    .expect("command failed");
-                // io::stdout().write_all(&result.stdout).unwrap();
-                // io::stderr().write_all(&result.stderr).unwrap();
+                    .await?;
             }
         }
         Commands::Delete { .. } => {
