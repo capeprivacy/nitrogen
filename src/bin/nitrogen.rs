@@ -5,6 +5,7 @@ use aws_sdk_cloudformation::{model::Parameter, output::CreateStackOutput, Client
 use clap::{Parser, Subcommand};
 use home;
 use std::env;
+use std::fmt;
 use tokio::process::Command;
 
 include!("../template.rs");
@@ -232,10 +233,19 @@ async fn main() -> Result<(), Error> {
         }
         Commands::Deploy{instance, eif, ssh_key, cpu_count, memory} => {
             let out = Command::new("ssh")
-                .args(["-i", &ssh_key, &("ec2-user@".to_owned()+&instance)])
-                .args(["nitro-cli", "run-enclave"])
-                .args(["--encalve-cid", "16"])
-                .args(["--eif-path", &eif, "--cpu-count", &cpu_count.to_string()])
+                .args([
+                    "-i", 
+                    &ssh_key,
+                    !format("ec2-user@{}", &instance),
+                    ])
+                    "nitro-cli",
+                    "run-enclave",
+                    "--encalve-cid",
+                    "16",
+                    "--eif-path",
+                    &eif,
+                    "--cpu-count",
+                    &cpu_count.to_string()
                 .args(["--memory", &memory.to_string()])
                 .output()
                 .await?;
