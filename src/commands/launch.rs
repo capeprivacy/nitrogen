@@ -1,6 +1,9 @@
-use aws_sdk_cloudformation::{model::{Parameter, Stack, StackStatus}, output::CreateStackOutput, Client};
+use aws_sdk_cloudformation::{
+    model::{Parameter, Stack, StackStatus},
+    output::CreateStackOutput,
+    Client,
+};
 use failure::Error;
-
 
 fn lift_to_param(key: impl Into<String>, value: impl Into<String>) -> Parameter {
     Parameter::builder()
@@ -83,7 +86,7 @@ pub async fn launch(
         }
     };
     let (stack_status, stack_status_reason) = loop {
-        let (status, status_reason) = check_stack_status(&client, &stack_id).await?;
+        let (status, status_reason) = check_stack_status(client, stack_id).await?;
         tokio::time::sleep(tokio::time::Duration::new(2, 0)).await;
         if status != StackStatus::CreateInProgress {
             break (status, status_reason);
@@ -110,13 +113,17 @@ pub async fn launch(
         }
     }
     // Stack was created successfully, report outputs to stdout
-    let this_stack = get_stack(&client, stack_id).await?;
+    let this_stack = get_stack(client, stack_id).await?;
     // TODO handle missing outputs in this unwrap, maybe w/ warning instead of error?
-    println!("Enclave user information:");
-    let outputs: Vec<(String, String)> = this_stack.outputs().unwrap().iter().map(|o| {
-        let k = o.output_key().unwrap().to_string();
-        let v = o.output_value().unwrap().to_string();
-        (k, v)
-    }).collect();
+    let outputs: Vec<(String, String)> = this_stack
+        .outputs()
+        .unwrap()
+        .iter()
+        .map(|o| {
+            let k = o.output_key().unwrap().to_string();
+            let v = o.output_value().unwrap().to_string();
+            (k, v)
+        })
+        .collect();
     Ok(outputs)
 }

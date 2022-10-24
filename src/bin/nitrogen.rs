@@ -1,12 +1,8 @@
-use aws_sdk_cloudformation::model::{Stack, StackStatus};
-use failure::Error;
-
-use aws_sdk_cloudformation::{model::Parameter, output::CreateStackOutput, Client};
+use aws_sdk_cloudformation::Client;
 use clap::{Parser, Subcommand};
-use std::env;
-use tokio::process::Command;
+use failure::Error;
+use nitrogen::commands::{build, launch};
 use nitrogen::template::LAUNCH_TEMPLATE;
-use nitrogen::commands::launch;
 
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
@@ -80,8 +76,17 @@ async fn main() -> Result<(), Error> {
             let launch_template = LAUNCH_TEMPLATE.to_string();
             let shared_config = aws_config::from_env().load().await;
             let client = Client::new(&shared_config);
-            
-            let outputs = launch(&client, &launch_template, &name, &instance_type, &port, &key_name, &ssh_location).await?;
+            let outputs = launch(
+                &client,
+                &launch_template,
+                &name,
+                &instance_type,
+                &port,
+                &key_name,
+                &ssh_location,
+            )
+            .await?;
+
             println!("Enclave user information:");
             for (out_key, out_val) in outputs.iter() {
                 println!("\t- {}: {}", out_key, out_val);
@@ -93,30 +98,7 @@ async fn main() -> Result<(), Error> {
             context,
             eif,
         } => {
-            Command::new("docker")
-                .args(["build", "-t", "nitrogen-build", &context, "-f", &dockerfile])
-                .output()
-                .await
-                .expect("failed to build docker image");
-            let h = home::home_dir().unwrap_or_default();
-            let out = Command::new("docker")
-                .args([
-                    "run",
-                    "-v",
-                    &format!("{}/.docker:/root/.docker", h.display()),
-                    "-v",
-                    "/var/run/docker.sock:/var/run/docker.sock",
-                    "-v",
-                    &format!("{}:/root/build", env::current_dir()?.to_str().unwrap_or("")),
-                    "capeprivacy/eif-builder:latest",
-                    "build-enclave",
-                    "--docker-uri",
-                    "nitrogen-build",
-                    "--output-file",
-                    &format!("/root/build/{}", eif),
-                ])
-                .output()
-                .await?;
+            let out = build(&dockerfile, &context, &eif).await?;
             println!("{:?}", out);
             Ok(())
         }
