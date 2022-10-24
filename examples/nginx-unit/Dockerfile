@@ -1,4 +1,4 @@
-FROM nginx/unit:1.26.1-python3.9
+FROM nginx/unit:1.28.0-minimal
 
 RUN apt update && apt install -y \
         socat \
