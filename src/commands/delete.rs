@@ -1,5 +1,5 @@
 use aws_sdk_cloudformation::{
-    model::{Parameter, Stack, StackStatus},
+    model::StackStatus,
     Client,
 };
 use failure::Error;
@@ -9,6 +9,12 @@ fn lift_to_param(key: impl Into<String>, value: impl Into<String>) -> Parameter 
         .parameter_key(key)
         .parameter_value(value)
         .build()
+}
+
+async fn get_stack(client: &Client, name: &str) -> Result<Stack, Error> {
+    let resp = client.describe_stacks().stack_name(name).send().await?;
+    let this_stack = resp.stacks().unwrap_or_default().first().unwrap();
+    Ok(this_stack.clone())
 }
 
 async fn check_stack_status(
@@ -28,7 +34,6 @@ async fn delete_stack(client: &Client, name: &String) -> Result<(), Error> {
 
     client.delete_stack()
         .stack_name(name)
-        .parameters(lift_to_param("InstanceName", name))
         .send()
         .await?;
 
