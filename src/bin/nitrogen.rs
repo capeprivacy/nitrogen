@@ -231,7 +231,19 @@ async fn main() -> Result<(), Error> {
             Ok(())
         }
         Commands::Deploy{instance, eif, ssh_key, cpu_count, memory} => {
-            let out = Command::new("ssh")
+            println!("Deploying {} to the instance... (this may take some time, especially for larger files)", eif);
+            let scp_out = Command::new("scp")
+                .args([
+                    "-i", 
+                    &ssh_key,
+                    &eif,
+                    format!("ec2-user@{}:~", &instance).as_str(),
+                ])
+                .output()
+                .await?;
+            println!("{:?}", scp_out);
+            println!("Running enclave...");
+            let ssh_out = Command::new("ssh")
                 .args([
                     "-i", 
                     &ssh_key,
@@ -241,7 +253,7 @@ async fn main() -> Result<(), Error> {
                     "--enclave-cid",
                     "16",
                     "--eif-path",
-                    &eif,
+                    format!("~/{}", &eif).as_str(),
                     "--cpu-count",
                     &cpu_count,
                     "--memory",
@@ -249,7 +261,7 @@ async fn main() -> Result<(), Error> {
                 ])
                 .output()
                 .await?;
-            println!("{:?}", out);
+            println!("{:?}", ssh_out);
             Ok(())
         }
         Commands::Delete { .. } => {
