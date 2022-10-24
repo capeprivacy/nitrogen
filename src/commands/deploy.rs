@@ -13,8 +13,8 @@ pub async fn deploy(
     let scp_out = Command::new("scp")
         .args([
             "-i",
-            &ssh_key,
-            &eif,
+            ssh_key,
+            eif,
             format!("ec2-user@{}:~", &instance).as_str(),
         ])
         .output()
@@ -24,18 +24,18 @@ pub async fn deploy(
     let ssh_out = Command::new("ssh")
         .args([
             "-i",
-            &ssh_key,
-            format!("ec2-user@{}", &instance).as_str(),
+            ssh_key,
+            format!("ec2-user@{}", instance).as_str(),
             "nitro-cli",
             "run-enclave",
             "--enclave-cid",
             "16",
             "--eif-path",
-            format!("~/{}", &eif).as_str(),
+            format!("~/{}", eif).as_str(),
             "--cpu-count",
-            &cpu_count,
+            cpu_count,
             "--memory",
-            &memory,
+            memory,
         ])
         .output()
         .await?;
