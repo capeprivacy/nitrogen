@@ -3,22 +3,8 @@ use aws_sdk_cloudformation::{
     Client,
 };
 use failure::Error;
-
-async fn get_stack(client: &Client, name: &str) -> Result<Stack, Error> {
-    let resp = client.describe_stacks().stack_name(name).send().await?;
-    let this_stack = resp.stacks().unwrap_or_default().first().unwrap();
-    Ok(this_stack.clone())
-}
-
-async fn check_stack_status(
-    client: &Client,
-    name: &str,
-) -> Result<(StackStatus, String), Error> {
-    let this_stack = get_stack(client, name).await?;
-    let stack_status = this_stack.stack_status().unwrap();
-    let stack_status_reason = this_stack.stack_status_reason().unwrap_or("");
-    Ok((stack_status.clone(), stack_status_reason.to_string()))
-}
+use launch::get_stack
+use launch::check_stack_status
 
 async fn delete_stack(client: &Client, name: &String) -> Result<(), Error> {
     // TODO tokio tracing, consider instrument
