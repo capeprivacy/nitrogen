@@ -1,15 +1,8 @@
 use aws_sdk_cloudformation::{
-    model::{Parameter, Stack, StackStatus},
+    model::{Stack, StackStatus},
     Client,
 };
 use failure::Error;
-
-fn lift_to_param(key: impl Into<String>, value: impl Into<String>) -> Parameter {
-    Parameter::builder()
-        .parameter_key(key)
-        .parameter_value(value)
-        .build()
-}
 
 async fn get_stack(client: &Client, name: &str) -> Result<Stack, Error> {
     let resp = client.describe_stacks().stack_name(name).send().await?;
@@ -46,7 +39,7 @@ pub async fn delete(
 ) -> Result<(), Error> {
 
     // TODO get to check if it exists
-    let delete_output = delete_stack(client, name).await?;
+    delete_stack(client, name).await?;
 
     let (stack_status, stack_status_reason) = loop {
         let (status, status_reason) = check_stack_status(client, name).await?;
