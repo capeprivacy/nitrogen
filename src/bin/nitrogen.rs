@@ -3,7 +3,6 @@ use failure::Error;
 
 use aws_sdk_cloudformation::{model::Parameter, output::CreateStackOutput, Client};
 use clap::{Parser, Subcommand};
-use home;
 use std::env;
 use tokio::process::Command;
 use nitrogen::template::LAUNCH_TEMPLATE;
@@ -77,7 +76,7 @@ async fn main() -> Result<(), Error> {
             key_name,
             ssh_location,
         } => {
-            let ssh_location = ssh_location.unwrap_or("0.0.0.0/0".to_string());
+            let ssh_location = ssh_location.unwrap_or_else(|| "0.0.0.0/0".to_string());
             let launch_template = LAUNCH_TEMPLATE.to_string();
             let shared_config = aws_config::from_env().load().await;
             let client = Client::new(&shared_config);
