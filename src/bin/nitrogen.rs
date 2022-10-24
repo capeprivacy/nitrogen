@@ -1,6 +1,7 @@
 use aws_sdk_cloudformation::Client;
 use clap::{Parser, Subcommand};
 use failure::Error;
+use tokio::process::Command;
 use nitrogen::commands::{build, launch};
 use nitrogen::template::LAUNCH_TEMPLATE;
 
