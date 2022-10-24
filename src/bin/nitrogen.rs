@@ -54,9 +54,9 @@ enum Commands {
         /// Filepath to SSH key for the instance
         ssh_key: String,
         /// Number of CPUs to provision for the enclave
-        cpu_count: usize,
+        cpu_count: String,
         /// Memory in MB to provision for the enclave
-        memory: usize,
+        memory: String,
     },
 
     /// Delete launched ec2 instance
