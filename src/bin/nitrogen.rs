@@ -108,11 +108,8 @@ async fn main() -> Result<(), Error> {
         Commands::Delete { name } => {
             let shared_config = aws_config::from_env().load().await;
             let client = Client::new(&shared_config);
-            let outputs = delete(
-                &client,
-                &name,
-            )
-            .await?;
+            
+            delete(&client, &name).await?;
 
             println!("Delete successful {}", name);
             Ok(())
