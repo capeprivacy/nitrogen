@@ -41,13 +41,13 @@ async fn launch_stack(
     Ok(stack_output)
 }
 
-async fn get_stack(client: &Client, stack_id: &str) -> Result<Stack, Error> {
+pub async fn get_stack(client: &Client, stack_id: &str) -> Result<Stack, Error> {
     let resp = client.describe_stacks().stack_name(stack_id).send().await?;
     let this_stack = resp.stacks().unwrap_or_default().first().unwrap();
     Ok(this_stack.clone())
 }
 
-async fn check_stack_status(
+pub async fn check_stack_status(
     client: &Client,
     stack_id: &str,
 ) -> Result<(StackStatus, String), Error> {
