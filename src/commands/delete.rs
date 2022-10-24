@@ -48,15 +48,6 @@ pub async fn delete(
     // TODO get to check if it exists
     let delete_output = delete_stack(client, name).await?;
 
-    let success = match delete_output {
-        Ok(()) => (),
-        Err(..) => {
-            return Err(failure::err_msg(
-                "Deleting stack failed, please check CloudFormation \
-                logs to determine the source of the error.",
-            ))
-        }
-    };
     let (stack_status, stack_status_reason) = loop {
         let (status, status_reason) = check_stack_status(client, name).await?;
         tokio::time::sleep(tokio::time::Duration::new(2, 0)).await;
