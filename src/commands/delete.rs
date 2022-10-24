@@ -4,6 +4,23 @@ use aws_sdk_cloudformation::{
 };
 use failure::Error;
 
+fn lift_to_param(key: impl Into<String>, value: impl Into<String>) -> Parameter {
+    Parameter::builder()
+        .parameter_key(key)
+        .parameter_value(value)
+        .build()
+}
+
+async fn check_stack_status(
+    client: &Client,
+    name: &str,
+) -> Result<(StackStatus, String), Error> {
+    let this_stack = get_stack(client, name).await?;
+    let stack_status = this_stack.stack_status().unwrap();
+    let stack_status_reason = this_stack.stack_status_reason().unwrap_or("");
+    Ok((stack_status.clone(), stack_status_reason.to_string()))
+}
+
 async fn delete_stack(client: &Client, name: &String) -> Result<(), Error> {
     // TODO tokio tracing, consider instrument
     println!("Deleting instance...");
@@ -26,9 +43,9 @@ pub async fn delete(
     // TODO get to check if it exists
     let delete_output = delete_stack(client, name).await?;
 
-    let resp = match delete_output {
-        Ok() => Ok(),
-        Err(error) => {
+    let success = match delete_output {
+        Ok(()) => (),
+        Err(..) => {
             return Err(failure::err_msg(
                 "Deleting stack failed, please check CloudFormation \
                 logs to determine the source of the error.",
@@ -36,7 +53,7 @@ pub async fn delete(
         }
     };
     let (stack_status, stack_status_reason) = loop {
-        let (status, status_reason) = check_stack_status(client, stack_id).await?;
+        let (status, status_reason) = check_stack_status(client, name).await?;
         tokio::time::sleep(tokio::time::Duration::new(2, 0)).await;
         if status != StackStatus::DeleteInProgress {
             break (status, status_reason);
