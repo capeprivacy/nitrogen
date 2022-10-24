@@ -115,8 +115,7 @@ async fn main() -> Result<(), Error> {
             cpu_count,
             memory,
         } => {
-            println!("Deploying {} to the instance... (this may take some time, especially for larger files)", eif);
-            let ssh_out = deploy(&instance, &eif, &ssh_key, &cpu_count, &memory).await?;
+            let out = deploy(&instance, &eif, &ssh_key, &cpu_count, &memory).await?;
             println!("{:?}", ssh_out);
             Ok(())
         }
