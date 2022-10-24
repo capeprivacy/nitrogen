@@ -108,11 +108,17 @@ async fn main() -> Result<(), Error> {
             println!("{:?}", out);
             Ok(())
         }
-        Commands::Deploy{instance, eif, ssh_key, cpu_count, memory} => {
+        Commands::Deploy {
+            instance,
+            eif,
+            ssh_key,
+            cpu_count,
+            memory,
+        } => {
             println!("Deploying {} to the instance... (this may take some time, especially for larger files)", eif);
             let scp_out = Command::new("scp")
                 .args([
-                    "-i", 
+                    "-i",
                     &ssh_key,
                     &eif,
                     format!("ec2-user@{}:~", &instance).as_str(),
@@ -123,7 +129,7 @@ async fn main() -> Result<(), Error> {
             println!("Running enclave...");
             let ssh_out = Command::new("ssh")
                 .args([
-                    "-i", 
+                    "-i",
                     &ssh_key,
                     format!("ec2-user@{}", &instance).as_str(),
                     "nitro-cli",
