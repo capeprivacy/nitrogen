@@ -3,16 +3,16 @@ use std::process::Output;
 use tokio::process::Command;
 
 pub async fn deploy(
-    instance: String,
-    eif: String,
-    ssh_key: String,
-    cpu_count: String,
-    memory: String,
+    instance: &String,
+    eif: &String,
+    ssh_key: &String,
+    cpu_count: &String,
+    memory: &String,
 ) -> Result<Output, Error> {
     println!("Deploying {} to the instance...\n(this may take some time, especially for larger files)", eif);
     let scp_out = Command::new("scp")
         .args([
-            "-i", 
+            "-i",
             &ssh_key,
             &eif,
             format!("ec2-user@{}:~", &instance).as_str(),
@@ -23,7 +23,7 @@ pub async fn deploy(
     println!("Running enclave...");
     let ssh_out = Command::new("ssh")
         .args([
-            "-i", 
+            "-i",
             &ssh_key,
             format!("ec2-user@{}", &instance).as_str(),
             "nitro-cli",

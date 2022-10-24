@@ -1,7 +1,7 @@
 use aws_sdk_cloudformation::Client;
 use clap::{Parser, Subcommand};
 use failure::Error;
-use nitrogen::commands::{build, launch, deploy};
+use nitrogen::commands::{build, deploy, launch};
 use nitrogen::template::LAUNCH_TEMPLATE;
 
 #[derive(Parser)]
@@ -108,9 +108,16 @@ async fn main() -> Result<(), Error> {
             println!("{:?}", out);
             Ok(())
         }
-        Commands::Deploy{instance, eif, ssh_key, cpu_count, memory} => {
-            let out = deploy(instance, eif, ssh_key, cpu_count, memory).await?;
-            println!("{:?}", out);
+        Commands::Deploy {
+            instance,
+            eif,
+            ssh_key,
+            cpu_count,
+            memory,
+        } => {
+            println!("Deploying {} to the instance... (this may take some time, especially for larger files)", eif);
+            let ssh_out = deploy(&instance, &eif, &ssh_key, &cpu_count, &memory).await?;
+            println!("{:?}", ssh_out);
             Ok(())
         }
         Commands::Delete { .. } => {
