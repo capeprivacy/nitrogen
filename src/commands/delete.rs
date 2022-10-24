@@ -3,7 +3,6 @@ use aws_sdk_cloudformation::{
     Client,
 };
 use failure::Error;
-use super::launch::get_stack;
 use super::launch::check_stack_status;
 
 async fn delete_stack(client: &Client, name: &String) -> Result<(), Error> {
