@@ -1,8 +1,7 @@
 use aws_sdk_cloudformation::Client;
 use clap::{Parser, Subcommand};
 use failure::Error;
-use tokio::process::Command;
-use nitrogen::commands::{build, launch};
+use nitrogen::commands::{build, deploy, launch};
 use nitrogen::template::LAUNCH_TEMPLATE;
 
 #[derive(Parser)]
@@ -55,9 +54,9 @@ enum Commands {
         /// Filepath to SSH key for the instance
         ssh_key: String,
         /// Number of CPUs to provision for the enclave
-        cpu_count: String,
+        cpu_count: usize,
         /// Memory in MB to provision for the enclave
-        memory: String,
+        memory: usize,
     },
 
     /// Delete launched ec2 instance
@@ -117,35 +116,7 @@ async fn main() -> Result<(), Error> {
             memory,
         } => {
             println!("Deploying {} to the instance... (this may take some time, especially for larger files)", eif);
-            let scp_out = Command::new("scp")
-                .args([
-                    "-i",
-                    &ssh_key,
-                    &eif,
-                    format!("ec2-user@{}:~", &instance).as_str(),
-                ])
-                .output()
-                .await?;
-            println!("{:?}", scp_out);
-            println!("Running enclave...");
-            let ssh_out = Command::new("ssh")
-                .args([
-                    "-i",
-                    &ssh_key,
-                    format!("ec2-user@{}", &instance).as_str(),
-                    "nitro-cli",
-                    "run-enclave",
-                    "--enclave-cid",
-                    "16",
-                    "--eif-path",
-                    format!("~/{}", &eif).as_str(),
-                    "--cpu-count",
-                    &cpu_count,
-                    "--memory",
-                    &memory,
-                ])
-                .output()
-                .await?;
+            let ssh_out = deploy(&instance, &eif, &ssh_key, &cpu_count, &memory).await?;
             println!("{:?}", ssh_out);
             Ok(())
         }
