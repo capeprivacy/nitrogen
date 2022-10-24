@@ -3,8 +3,8 @@ use aws_sdk_cloudformation::{
     Client,
 };
 use failure::Error;
-use launch::get_stack
-use launch::check_stack_status
+use launch::get_stack;
+use launch::check_stack_status;
 
 async fn delete_stack(client: &Client, name: &String) -> Result<(), Error> {
     // TODO tokio tracing, consider instrument
