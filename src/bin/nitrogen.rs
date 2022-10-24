@@ -116,7 +116,7 @@ async fn main() -> Result<(), Error> {
             memory,
         } => {
             let out = deploy(&instance, &eif, &ssh_key, &cpu_count, &memory).await?;
-            println!("{:?}", ssh_out);
+            println!("{:?}", out);
             Ok(())
         }
         Commands::Delete { .. } => {
