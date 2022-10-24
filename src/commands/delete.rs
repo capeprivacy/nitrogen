@@ -1,5 +1,5 @@
 use aws_sdk_cloudformation::{
-    model::StackStatus,
+    model::{Parameter, Stack, StackStatus},
     Client,
 };
 use failure::Error;
