@@ -1,4 +1,4 @@
-use super::launch::check_stack_status;
+use super::setup::check_stack_status;
 use aws_sdk_cloudformation::{model::StackStatus, Client};
 use failure::Error;
 
