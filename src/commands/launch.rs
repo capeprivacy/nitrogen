@@ -47,7 +47,7 @@ async fn get_stack(client: &Client, stack_id: &str) -> Result<Stack, Error> {
     Ok(this_stack.clone())
 }
 
-pub async fn check_stack_status(
+pub(crate) async fn check_stack_status(
     client: &Client,
     stack_id: &str,
 ) -> Result<(StackStatus, String), Error> {
