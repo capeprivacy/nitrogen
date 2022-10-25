@@ -56,7 +56,8 @@ enum Commands {
         /// Number of CPUs to provision for the enclave
         cpu_count: String,
         /// Memory in MB to provision for the enclave
-        memory: String,
+        #[arg(short, long, default_value_t=0)]
+        memory: u64,
     },
 
     /// Delete launched ec2 instance
@@ -115,7 +116,7 @@ async fn main() -> Result<(), Error> {
             cpu_count,
             memory,
         } => {
-            let out = deploy(&instance, &eif, &ssh_key, &cpu_count, &memory).await?;
+            let out = deploy(&instance, &eif, &ssh_key, &cpu_count, memory).await?;
             println!("{:?}", out);
             Ok(())
         }

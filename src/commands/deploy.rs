@@ -9,12 +9,16 @@ pub async fn deploy(
     eif: &String,
     ssh_key: &String,
     cpu_count: &String,
-    memory: &String,
+    memory: u64,
 ) -> Result<Output, Error> {
     let metadata = fs::metadata(eif)?;
     let eif_size = metadata.len() / 1000000; // to mb
 
-    // sudo sed -i 's/memory_mib: .*/memory_mib: 515/g' /etc/nitro_enclaves/allocator.yaml
+    let mut mem = memory;
+    if mem == 0 {
+        mem = eif_size * 5;
+    }
+
     let sed_out = Command::new("ssh")
         .args([
             "-i",
@@ -23,7 +27,7 @@ pub async fn deploy(
             "sudo",
             "sed",
             "-i",
-            format!("'s/memory_mib: .*/memory_mib: {}/g'", eif_size * 5).as_str(),
+            format!("'s/memory_mib: .*/memory_mib: {}/g'", mem).as_str(),
             "/etc/nitro_enclaves/allocator.yaml",
         ])
         .output()?;
@@ -88,7 +92,7 @@ pub async fn deploy(
             "--cpu-count",
             cpu_count,
             "--memory",
-            memory,
+            mem.to_string().as_str(),
         ])
         .output()?;
     if !ssh_out.status.success() {
