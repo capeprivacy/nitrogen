@@ -1,9 +1,10 @@
-![Nitrogen logo](https://user-images.githubusercontent.com/404716/197253799-e37fde0d-4e88-48de-9961-adaeb759bcc0.png)
+<div align="center">
+  <img src="./media/nitrogen-logo.svg" alt="Nitrogen logo" width="400">
+</div>
 
 # Nitrogen CLI
 
 Nitrogen is a tool for deploying web services to AWS Nitro Enclaves.
-
 
 ## Commands
 
@@ -23,19 +24,31 @@ Nitrogen is a tool for deploying web services to AWS Nitro Enclaves.
 
 ## Examples
 
-`nitrogen setup --name nitrogen-test --instance-type m5n.16xlarge -k ec2-key`
+```
+$ nitrogen setup --name nitrogen-test --instance-type m5n.16xlarge -k ec2-key`
+
 > Successfully setup enclave with stack ID "arn:aws:cloudformation:us-east-1::stack/nitrogen-test/500860b0-53d1-11ed-967c-0ebc7567a9a9"
-> Enclave user information:
-> 	InstanceId: i-0dd81f6b48396b020
-> 	PublicIP: 54.164.195.92
-> 	AZ: us-east-1c
-> 	PublicDNS: ec2-54-164-195-92.compute-1.amazonaws.com
+>   Enclave user information:
+>     InstanceId: i-0dd81f6b48396b020
+>     PublicIP: 54.164.195.92
+>     AZ: us-east-1c
+>     PublicDNS: ec2-54-164-195-92.compute-1.amazonaws.com
+```
 
-`nitrogen build Dockerfile --name nginx`
+```sh
+$ nitrogen build Dockerfile --name nginx
+
 > Filename: nginx.eif
+```
 
-`nitrogen deploy nginx.eif ec2-1-234-56-789.compute-1.amazonaws.com`
+```sh
+$ nitrogen deploy nginx.eif ec2-1-234-56-789.compute-1.amazonaws.com`
+
 > Listening: ec2-1-234-56-789.compute-1.amazonaws.com:443
+```
 
-`curl https://ec2-1-234-56-789.compute-1.amazonaws.com/`
+```sh
+$ curl https://ec2-1-234-56-789.compute-1.amazonaws.com/
+
 > Hello World
+```
