@@ -9,7 +9,10 @@ pub async fn deploy(
     cpu_count: &String,
     memory: &String,
 ) -> Result<Output, Error> {
-    println!("Deploying {} to the instance...\n(this may take some time, especially for larger files)", eif);
+    println!(
+        "Deploying {} to the instance...\n(this may take some time, especially for larger files)",
+        eif
+    );
     let scp_out = Command::new("scp")
         .args([
             "-i",

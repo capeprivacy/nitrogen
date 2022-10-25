@@ -1,7 +1,7 @@
 use aws_sdk_cloudformation::Client;
 use clap::{Parser, Subcommand};
 use failure::Error;
-use nitrogen::commands::{build, deploy setup};
+use nitrogen::commands::{build, deploy, setup};
 use nitrogen::template::SETUP_TEMPLATE;
 
 #[derive(Parser)]
