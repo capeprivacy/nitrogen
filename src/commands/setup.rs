@@ -12,9 +12,9 @@ fn lift_to_param(key: impl Into<String>, value: impl Into<String>) -> Parameter 
         .build()
 }
 
-async fn launch_stack(
+async fn setup_stack(
     client: &Client,
-    launch_template: &String,
+    setup_template: &String,
     name: &String,
     instance_type: &String,
     port: &usize,
@@ -22,7 +22,7 @@ async fn launch_stack(
     ssh_location: &String,
 ) -> Result<CreateStackOutput, Error> {
     // TODO tokio tracing, consider instrument
-    println!("Launching instance...");
+    println!("Setting up instance...");
     println!("Instance Name: {}", name);
     println!("Instance type: {}", instance_type);
     println!("Socat Port: {}", port);
@@ -31,7 +31,7 @@ async fn launch_stack(
     let stack = client
         .create_stack()
         .stack_name(name)
-        .template_body(launch_template)
+        .template_body(setup_template)
         .parameters(lift_to_param("InstanceName", name))
         .parameters(lift_to_param("InstanceType", instance_type))
         .parameters(lift_to_param("Port", port.to_string()))
@@ -57,18 +57,18 @@ async fn check_stack_status(
     Ok((stack_status.clone(), stack_status_reason.to_string()))
 }
 
-pub async fn launch(
+pub async fn setup(
     client: &Client,
-    launch_template: &String,
+    setup_template: &String,
     name: &String,
     instance_type: &String,
     port: &usize,
     key_name: &String,
     ssh_location: &String,
 ) -> Result<Vec<(String, String)>, Error> {
-    let stack_output = launch_stack(
+    let stack_output = setup_stack(
         client,
-        launch_template,
+        setup_template,
         name,
         instance_type,
         port,
@@ -95,7 +95,7 @@ pub async fn launch(
     match stack_status {
         StackStatus::CreateComplete => {
             println!(
-                "Successfully launched enclave with stack ID {:?}",
+                "Successfully setup enclave with stack ID {:?}",
                 stack_output.stack_id().unwrap()
             );
         }
