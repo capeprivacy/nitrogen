@@ -1,8 +1,8 @@
 use aws_sdk_cloudformation::Client;
 use clap::{Parser, Subcommand};
 use failure::Error;
-use nitrogen::commands::{build, deploy, launch};
-use nitrogen::template::LAUNCH_TEMPLATE;
+use nitrogen::commands::{build, delete, deploy, setup};
+use nitrogen::template::SETUP_TEMPLATE;
 
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
@@ -14,7 +14,7 @@ struct Cli {
 #[derive(Subcommand)]
 enum Commands {
     /// Provision nitro-enabled ec2 instances
-    Launch {
+    Setup {
         /// Name of the CloudFormation stack/provisioned EC2 instance
         #[arg(short, long)]
         name: String,
@@ -62,7 +62,7 @@ enum Commands {
     /// Delete launched ec2 instance
     Delete {
         /// Name of the provisioned instance
-        instance: String,
+        name: String,
     },
 }
 
@@ -71,7 +71,7 @@ async fn main() -> Result<(), Error> {
     let cli = Cli::parse();
 
     match cli.command {
-        Commands::Launch {
+        Commands::Setup {
             name,
             instance_type,
             port,
@@ -79,12 +79,12 @@ async fn main() -> Result<(), Error> {
             ssh_location,
         } => {
             let ssh_location = ssh_location.unwrap_or_else(|| "0.0.0.0/0".to_string());
-            let launch_template = LAUNCH_TEMPLATE.to_string();
+            let setup_template = SETUP_TEMPLATE.to_string();
             let shared_config = aws_config::from_env().load().await;
             let client = Client::new(&shared_config);
-            let outputs = launch(
+            let outputs = setup(
                 &client,
-                &launch_template,
+                &setup_template,
                 &name,
                 &instance_type,
                 &port,
@@ -119,8 +119,14 @@ async fn main() -> Result<(), Error> {
             println!("{:?}", out);
             Ok(())
         }
-        Commands::Delete { .. } => {
-            todo!("implement delete command logic");
+        Commands::Delete { name } => {
+            let shared_config = aws_config::from_env().load().await;
+            let client = Client::new(&shared_config);
+
+            delete(&client, &name).await?;
+
+            println!("Delete successful {}", name);
+            Ok(())
         }
     }
 }
