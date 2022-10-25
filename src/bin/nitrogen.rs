@@ -19,27 +19,25 @@ enum Commands {
         name: String,
         /// EC2 key-pair to use for the provisioned instance
         key_name: String,
-        /// EC2-instance type. Must be Nitro compatible. Defaults to m5a.xlarge
-        #[arg(long)]
-        instance_type: Option<String>,
-        /// EC2-instance port for socat enclave connection. Defaults to 5000
+        /// EC2-instance type. Must be Nitro compatible
+        #[arg(long, default_value_t = String::from("m5a.xlarge"))]
+        instance_type: String,
+        /// EC2-instance port for socat enclave connection
         #[arg(short, long, default_value_t = 5000)]
         port: usize,
-        /// IP address range that can be used to SSH to the EC2 instance. Defaults to anywhere ("0.0.0.0/0").
-        #[arg(short, long)]
-        ssh_location: Option<String>,
+        /// IP address range that can be used to SSH to the EC2 instance.
+        #[arg(short, long, default_value_t = String::from("0.0.0.0/0"))]
+        ssh_location: String,
     },
 
     /// Build a Nitro EIF from a given Dockerfile
     Build {
-        // Dockerfile location
-        #[arg(short, long)]
-        dockerfile: String,
-        // docker context directory
-        #[arg(short, long)]
+        /// Docker context directory
         context: String,
-        // Output EIF location
-        #[arg(short, long)]
+        /// Dockerfile location
+        dockerfile: String,
+        /// Output EIF location
+        #[arg(short, long, default_value_t = String::from("./nitrogen.eif"))]
         eif: String,
     },
 
@@ -52,7 +50,8 @@ enum Commands {
         /// Filepath to SSH key for the instance
         ssh_key: String,
         /// Number of CPUs to provision for the enclave
-        cpu_count: String,
+        #[arg(short, long, default_value_t = 2)]
+        cpu_count: u8,
         /// Memory in MB to provision for the enclave
         #[arg(short, long)]
         memory: Option<u64>,
@@ -77,8 +76,8 @@ async fn main() -> Result<(), Error> {
             key_name,
             ssh_location,
         } => {
-            let ssh_location = ssh_location.unwrap_or_else(|| "0.0.0.0/0".to_string());
-            let instance_type = instance_type.unwrap_or_else(|| "m5a.xlarge".to_string());
+            let ssh_location = ssh_location.to_string();
+            let instance_type = instance_type.to_string();
             let setup_template = SETUP_TEMPLATE.to_string();
             let shared_config = aws_config::from_env().load().await;
             let client = Client::new(&shared_config);
@@ -115,7 +114,14 @@ async fn main() -> Result<(), Error> {
             cpu_count,
             memory,
         } => {
-            let out = deploy(&instance, &eif, &ssh_key, &cpu_count, memory.unwrap_or_default()).await?;
+            let out = deploy(
+                &instance,
+                &eif,
+                &ssh_key,
+                &cpu_count,
+                memory.unwrap_or_default(),
+            )
+            .await?;
             println!("{:?}", out);
             Ok(())
         }
