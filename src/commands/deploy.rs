@@ -8,7 +8,7 @@ pub async fn deploy(
     instance: &String,
     eif: &String,
     ssh_key: &String,
-    cpu_count: &String,
+    cpu_count: &u8,
     memory: u64,
 ) -> Result<Output, Error> {
     let metadata = fs::metadata(eif)?;
@@ -90,7 +90,7 @@ pub async fn deploy(
             "--eif-path",
             format!("~/{}", eif).as_str(),
             "--cpu-count",
-            cpu_count,
+            cpu_count.to_string().as_str(),
             "--memory",
             mem.to_string().as_str(),
         ])

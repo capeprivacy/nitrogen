@@ -26,8 +26,7 @@ pub const SETUP_TEMPLATE: &str = r##"{
     "InstanceType" : {
       "Description" : "Type of the ec2 instance",
       "Type" : "String",
-      "AllowedValues" : [ "m5a.xlarge"],
-      "ConstraintDescription" : "must be a valid EC2 instance type that supports Nitro Enclaves, m5a.xlarge and larger."
+      "ConstraintDescription" : "Must be a virtualized Nitro-based instance type with at least two vCPUs, except t3, t3a, t4g, a1, c6g, c6gd, m6g, m6gd, r6g, and r6gd."
     },
 
     "SSHLocation" : {
