@@ -7,7 +7,7 @@ Nitrogen is a tool for deploying web services to AWS Nitro Enclaves.
 
 ## Commands
 
-- `nitrogen launch <ec2-instance-type> <port>`
+- `nitrogen setup -n <stack name> --instance-type <ec2-instance-type> -k <key-name> -p <port> -s <ssh_location`
 - `nitrogen build <Dockerfile>`
 - `nitrogen deploy <enclave-image-file> <ec2-hostname>`
 - `nitrogen delete <ec2-hostname>`
@@ -23,10 +23,13 @@ Nitrogen is a tool for deploying web services to AWS Nitro Enclaves.
 
 ## Examples
 
-`nitrogen launch m5n.16xlarge 443`
-> Hostname: ec2-1-234-56-789.compute-1.amazonaws.com
-> 
-> Ports: 22, 443
+`nitrogen setup --name nitrogen-test --instance-type m5n.16xlarge -k ec2-key`
+> Successfully setup enclave with stack ID "arn:aws:cloudformation:us-east-1::stack/nitrogen-test/500860b0-53d1-11ed-967c-0ebc7567a9a9"
+> Enclave user information:
+> 	InstanceId: i-0dd81f6b48396b020
+> 	PublicIP: 54.164.195.92
+> 	AZ: us-east-1c
+> 	PublicDNS: ec2-54-164-195-92.compute-1.amazonaws.com
 
 `nitrogen build Dockerfile --name nginx`
 > Filename: nginx.eif
