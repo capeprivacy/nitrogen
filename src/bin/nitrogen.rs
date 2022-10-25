@@ -1,7 +1,7 @@
 use aws_sdk_cloudformation::Client;
 use clap::{Parser, Subcommand};
 use failure::Error;
-use nitrogen::commands::{build, deploy, setup};
+use nitrogen::commands::{build, delete, deploy, setup};
 use nitrogen::template::SETUP_TEMPLATE;
 
 #[derive(Parser)]
@@ -62,7 +62,7 @@ enum Commands {
     /// Delete launched ec2 instance
     Delete {
         /// Name of the provisioned instance
-        instance: String,
+        name: String,
     },
 }
 
@@ -119,8 +119,14 @@ async fn main() -> Result<(), Error> {
             println!("{:?}", out);
             Ok(())
         }
-        Commands::Delete { .. } => {
-            todo!("implement delete command logic");
+        Commands::Delete { name } => {
+            let shared_config = aws_config::from_env().load().await;
+            let client = Client::new(&shared_config);
+
+            delete(&client, &name).await?;
+
+            println!("Delete successful {}", name);
+            Ok(())
         }
     }
 }
