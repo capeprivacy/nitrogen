@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="./media/nitrogen-logo.svg" alt="Nitrogen logo" width="200">
+  <img src="./media/nitrogen-logo.svg" alt="Nitrogen logo" width="400">
 </div>
 
 # Nitrogen CLI
