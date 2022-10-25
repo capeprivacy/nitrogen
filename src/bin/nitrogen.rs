@@ -16,17 +16,15 @@ enum Commands {
     /// Provision nitro-enabled ec2 instances
     Setup {
         /// Name of the CloudFormation stack/provisioned EC2 instance
-        #[arg(short, long)]
         name: String,
-        /// EC2-instance type. Must be Nitro compatible.
+        /// EC2 key-pair to use for the provisioned instance
+        key_name: String,
+        /// EC2-instance type. Must be Nitro compatible. Defaults to m5a.xlarge
         #[arg(long)]
-        instance_type: String,
-        /// EC2-instance port for socat enclave connection
+        instance_type: Option<String>,
+        /// EC2-instance port for socat enclave connection. Defaults to 5000
         #[arg(short, long, default_value_t = 5000)]
         port: usize,
-        /// EC2 key-pair to use for the provisioned instance
-        #[arg(short, long)]
-        key_name: String,
         /// IP address range that can be used to SSH to the EC2 instance. Defaults to anywhere ("0.0.0.0/0").
         #[arg(short, long)]
         ssh_location: Option<String>,
@@ -79,6 +77,7 @@ async fn main() -> Result<(), Error> {
             ssh_location,
         } => {
             let ssh_location = ssh_location.unwrap_or_else(|| "0.0.0.0/0".to_string());
+            let instance_type = instance_type.unwrap_or_else(|| "m5a.xlarge".to_string());
             let setup_template = SETUP_TEMPLATE.to_string();
             let shared_config = aws_config::from_env().load().await;
             let client = Client::new(&shared_config);
