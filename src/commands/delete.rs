@@ -1,28 +1,18 @@
-use aws_sdk_cloudformation::{
-    model::{StackStatus},
-    Client,
-};
-use failure::Error;
 use super::launch::check_stack_status;
+use aws_sdk_cloudformation::{model::StackStatus, Client};
+use failure::Error;
 
 async fn delete_stack(client: &Client, name: &String) -> Result<(), Error> {
     // TODO tokio tracing, consider instrument
     println!("Deleting instance...");
     println!("Instance Name: {}", name);
 
-    client.delete_stack()
-        .stack_name(name)
-        .send()
-        .await?;
+    client.delete_stack().stack_name(name).send().await?;
 
     Ok(())
 }
 
-pub async fn delete(
-    client: &Client,
-    name: &String,
-) -> Result<(), Error> {
-
+pub async fn delete(client: &Client, name: &String) -> Result<(), Error> {
     delete_stack(client, name).await?;
 
     let (stack_status, stack_status_reason) = loop {
@@ -34,9 +24,7 @@ pub async fn delete(
     };
     match stack_status {
         StackStatus::DeleteComplete => {
-            println!(
-                "Successfully deleted stack {:?}", name
-            );
+            println!("Successfully deleted stack {:?}", name);
         }
         StackStatus::DeleteFailed => {
             return Err(failure::err_msg(

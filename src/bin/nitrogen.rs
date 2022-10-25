@@ -1,7 +1,7 @@
 use aws_sdk_cloudformation::Client;
 use clap::{Parser, Subcommand};
 use failure::Error;
-use nitrogen::commands::{build, deploy, launch, delete};
+use nitrogen::commands::{build, delete, deploy, launch};
 use nitrogen::template::LAUNCH_TEMPLATE;
 
 #[derive(Parser)]
@@ -122,7 +122,7 @@ async fn main() -> Result<(), Error> {
         Commands::Delete { name } => {
             let shared_config = aws_config::from_env().load().await;
             let client = Client::new(&shared_config);
-            
+
             delete(&client, &name).await?;
 
             println!("Delete successful {}", name);
