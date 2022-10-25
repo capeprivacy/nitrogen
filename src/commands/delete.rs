@@ -23,7 +23,6 @@ pub async fn delete(
     name: &String,
 ) -> Result<(), Error> {
 
-    // TODO get to check if it exists
     delete_stack(client, name).await?;
 
     let (stack_status, stack_status_reason) = loop {
