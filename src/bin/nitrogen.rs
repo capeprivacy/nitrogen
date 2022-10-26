@@ -114,7 +114,11 @@ async fn main() -> Result<(), Error> {
             cpu_count,
             memory,
         } => {
+            let shared_config = aws_config::from_env().load().await;
+            let client = Client::new(&shared_config);
+
             let out = deploy(
+                client,
                 &instance,
                 &eif,
                 &ssh_key,

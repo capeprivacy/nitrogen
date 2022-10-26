@@ -15,7 +15,7 @@ async fn delete_stack(client: &Client, name: &String) -> Result<(), Error> {
 
 pub async fn delete(client: &Client, name: &String) -> Result<(), Error> {
     let this_stack = get_stack(client, name).await?;
-    let stack_id = this_stack.stack_id().unwrap();
+    let stack_id = this_stack.stack_id().unwrap_or_default();
 
     delete_stack(client, name).await?;
 
