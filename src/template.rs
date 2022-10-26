@@ -111,7 +111,11 @@ pub const SETUP_TEMPLATE: &str = r##"{
                 "systemctl start nitro-enclaves-allocator.service && systemctl enable nitro-enclaves-allocator.service\n",
                 "systemctl start docker && systemctl enable docker\n",
                 "docker pull alpine/socat:latest\n",
-                "docker run -d --name socat alpine/socat tcp-listen:",
+                "docker run -d -p",
+                { "Ref" : "Port" },
+                ":",
+                { "Ref" : "Port" },
+                " --name socat alpine/socat tcp-listen:",
                 { "Ref" : "Port" },
                 ",fork,keepalive,reuseaddr vsock-connect:16:5000,keepalive\n"
               ]
