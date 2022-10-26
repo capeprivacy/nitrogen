@@ -12,8 +12,7 @@ pub async fn build(
     let out = Command::new("docker")
         .args(["build", "-t", "nitrogen-build", context, "-f", dockerfile])
         .output()
-        .await
-        .expect("failed to build docker image");
+        .await?;
     if !out.status.success() {
         return Err(failure::err_msg(format!("unable to build docker image {:?}", out)))
     }
@@ -27,7 +26,7 @@ pub async fn build(
             "-v",
             "/var/run/docker.sock:/var/run/docker.sock",
             "-v",
-            &format!("{}:/root/build", env::current_dir()?.to_str().unwrap_or("")),
+            &format!("{}:/root/build", env::current_dir()?.to_str().unwrap_or_default()),
             "capeprivacy/eif-builder:latest",
             "build-enclave",
             "--docker-uri",
