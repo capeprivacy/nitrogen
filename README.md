@@ -36,7 +36,7 @@ $ nitrogen setup nitrogen-test ec2-key --instance-type m5n.16xlarge
 ```
 
 ```sh
-$ nitrogen build Dockerfile --eif ./nginx.eif
+$ nitrogen build examples/nginx/ examples/nginx/Dockerfile --eif ./nginx.eif
 
 > Filename: nginx.eif
 ```
@@ -51,4 +51,27 @@ $ nitrogen deploy ec2-1-234-56-789.compute-1.amazonaws.com nginx.eif ~/.ssh/id_r
 $ curl https://ec2-1-234-56-789.compute-1.amazonaws.com/
 
 > Hello World
+```
+
+## Troubleshooting
+
+If you have permissions issues and your aws account has MFA enabled then attempt to use a session token before running `setup`.
+
+```
+aws sts get-session-token --serial-number arn:aws:iam::<AWS ACCOUNT NUMBER>:mfa/<USER NAME> --token-code <CODE>
+```
+
+Export the values printed from the above command:
+
+```
+export AWS_ACCESS_KEY_ID=
+export AWS_SECRET_ACCESS_KEY=
+export AWS_SESSION_TOKEN=
+```
+
+You can also use a helper script in this library called `sts.sh`. Warning: this will unset any AWS environment variables related to auth
+that you have already set in your shell.
+
+```
+. sts.sh <ACCOUNT> <USER NAME> <CODE>
 ```
