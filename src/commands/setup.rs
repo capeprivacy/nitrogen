@@ -4,6 +4,7 @@ use aws_sdk_cloudformation::{
     Client,
 };
 use failure::Error;
+use tracing::{info, instrument};
 
 fn lift_to_param(key: impl Into<String>, value: impl Into<String>) -> Parameter {
     Parameter::builder()
@@ -21,13 +22,6 @@ async fn setup_stack(
     key_name: &String,
     ssh_location: &String,
 ) -> Result<CreateStackOutput, Error> {
-    // TODO tokio tracing, consider instrument
-    println!("Setting up instance...");
-    println!("Instance Name: {}", name);
-    println!("Instance type: {}", instance_type);
-    println!("Socat Port: {}", port);
-    println!("Key Name: {}", key_name);
-
     let stack = client
         .create_stack()
         .stack_name(name)
@@ -57,6 +51,7 @@ pub(crate) async fn check_stack_status(
     Ok((stack_status.clone(), stack_status_reason.to_string()))
 }
 
+#[instrument(level = "debug", skip(client, setup_template))]
 pub async fn setup(
     client: &Client,
     setup_template: &String,
@@ -87,17 +82,15 @@ pub async fn setup(
     };
     let (stack_status, stack_status_reason) = loop {
         let (status, status_reason) = check_stack_status(client, stack_id).await?;
-        tokio::time::sleep(tokio::time::Duration::new(2, 0)).await;
+        tokio::time::sleep(tokio::time::Duration::new(4, 0)).await;
         if status != StackStatus::CreateInProgress {
             break (status, status_reason);
         }
     };
     match stack_status {
         StackStatus::CreateComplete => {
-            println!(
-                "Successfully setup enclave with stack ID {:?}",
-                stack_output.stack_id().unwrap()
-            );
+            let stack_id = stack_output.stack_id().unwrap();
+            info!(stack_id, "Successfully setup enclave via CloudFormation.");
         }
         StackStatus::CreateFailed => {
             return Err(failure::err_msg(

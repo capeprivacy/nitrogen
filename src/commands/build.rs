@@ -3,7 +3,9 @@ use home;
 use std::env;
 use std::process::Output;
 use tokio::process::Command;
+use tracing::instrument;
 
+#[instrument(level = "debug")]
 pub async fn build(
     dockerfile: &String,
     context: &String,
