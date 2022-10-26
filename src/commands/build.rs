@@ -9,11 +9,15 @@ pub async fn build(
     context: &String,
     eif_name: &String,
 ) -> Result<Output, Error> {
-    Command::new("docker")
+    let out = Command::new("docker")
         .args(["build", "-t", "nitrogen-build", context, "-f", dockerfile])
         .output()
         .await
         .expect("failed to build docker image");
+    if !out.status.success() {
+        return Err(failure::err_msg(format!("unable to build docker image {:?}", out)))
+    }
+
     let h = home::home_dir().unwrap_or_default();
     let out = Command::new("docker")
         .args([
