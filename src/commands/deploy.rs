@@ -19,6 +19,24 @@ pub async fn deploy(
         mem = eif_size * 5;
     }
 
+    let terminate_out = Command::new("ssh")
+        .args([
+            "-i",
+            ssh_key,
+            format!("ec2-user@{}", instance).as_str(),
+            "nitro-cli",
+            "terminate-enclave",
+            "--all",
+        ])
+        .output()?;
+    if !terminate_out.status.success() {
+        return Err(failure::err_msg(format!(
+            "failed to terminate any currently running enclaves {:?}",
+            terminate_out
+        )));
+    }
+    println!("{:?}", terminate_out);
+
     let sed_out = Command::new("ssh")
         .args([
             "-i",
@@ -77,8 +95,9 @@ pub async fn deploy(
         )));
     }
     println!("{:?}", scp_out);
+
     println!("Running enclave...");
-    let ssh_out = Command::new("ssh")
+    let run_out = Command::new("ssh")
         .args([
             "-i",
             ssh_key,
@@ -95,11 +114,11 @@ pub async fn deploy(
             mem.to_string().as_str(),
         ])
         .output()?;
-    if !ssh_out.status.success() {
+    if !run_out.status.success() {
         return Err(failure::err_msg(format!(
             "failed to run enclave{:?}",
-            ssh_out
+            run_out
         )));
     }
-    Ok(ssh_out)
+    Ok(run_out)
 }
