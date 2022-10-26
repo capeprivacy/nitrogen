@@ -14,7 +14,10 @@ pub async fn build(
         .output()
         .await?;
     if !out.status.success() {
-        return Err(failure::err_msg(format!("unable to build docker image {:?}", out)))
+        return Err(failure::err_msg(format!(
+            "unable to build docker image {:?}",
+            out
+        )));
     }
 
     let h = home::home_dir().unwrap_or_default();
@@ -26,7 +29,10 @@ pub async fn build(
             "-v",
             "/var/run/docker.sock:/var/run/docker.sock",
             "-v",
-            &format!("{}:/root/build", env::current_dir()?.to_str().unwrap_or_default()),
+            &format!(
+                "{}:/root/build",
+                env::current_dir()?.to_str().unwrap_or_default()
+            ),
             "capeprivacy/eif-builder:latest",
             "build-enclave",
             "--docker-uri",
