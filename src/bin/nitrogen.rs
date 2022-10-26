@@ -97,7 +97,7 @@ async fn main() -> Result<(), Error> {
             let setup_template = SETUP_TEMPLATE.to_string();
             let shared_config = aws_config::from_env().load().await;
             let client = Client::new(&shared_config);
-            info!("Setting up enclave instance '{}'.", name);
+            info!("Spinning up enclave instance '{}'.", name);
             let outputs = setup(
                 &client,
                 &setup_template,
@@ -125,7 +125,7 @@ async fn main() -> Result<(), Error> {
             context,
             eif,
         } => {
-            info!("Building EIF from dockerfile...");
+            info!(context, dockerfile, "Building EIF from dockerfile.");
             let out = build(&dockerfile, &context, &eif).await?;
             debug!(docker_output=?out, "Docker output:");
             Ok(())

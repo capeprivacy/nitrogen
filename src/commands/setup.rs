@@ -90,7 +90,7 @@ pub async fn setup(
     match stack_status {
         StackStatus::CreateComplete => {
             let stack_id = stack_output.stack_id().unwrap();
-            info!(stack_id, "Successfully setup enclave via CloudFormation.");
+            info!(stack_id, "Successfully created enclave instance.");
         }
         StackStatus::CreateFailed => {
             return Err(failure::err_msg(
