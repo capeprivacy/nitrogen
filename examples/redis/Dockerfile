@@ -10,4 +10,4 @@ RUN ["chmod", "+x", "./run.sh"]
 COPY app.sh ./
 RUN ["chmod", "+x", "./app.sh"]
 
-CMD ["/run.sh"]
+CMD ["/bin/sh", "./run.sh"]
