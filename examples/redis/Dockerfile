@@ -4,7 +4,7 @@ RUN apt update && apt install -y \
         socat \
         iproute2
 
-ADD run.sh /
+COPY run.sh /
 RUN ["chmod", "+x", "/run.sh"]
 
 COPY app.sh /
