@@ -42,7 +42,7 @@ $ nitrogen build examples/nginx/ examples/nginx/Dockerfile --eif ./nginx.eif
 ```
 
 ```sh
-$ nitrogen deploy ec2-1-234-56-789.compute-1.amazonaws.com nginx.eif ~/.ssh/id_rsa
+$ nitrogen deploy nitrogen-test nginx.eif ~/.ssh/id_rsa
 
 > Listening: ec2-1-234-56-789.compute-1.amazonaws.com:443
 ```
