@@ -1,22 +1,17 @@
 use crate::commands::setup::get_stack;
-use aws_sdk_cloudformation::{model::Output as CloudOutput, Client};
+use aws_sdk_cloudformation::{
+    model::{Output as CloudOutput, Stack},
+    Client,
+};
 use failure::Error;
 use std::{
     fs,
     process::{Command, Output},
 };
+use tracing::{debug, info, instrument};
 
-pub async fn deploy(
-    client: Client,
-    instance: &str,
-    eif: &String,
-    ssh_key: &String,
-    cpu_count: u64,
-    memory: u64,
-) -> Result<Output, Error> {
-    let this_stack = get_stack(&client, instance).await?;
-
-    let outputs: Vec<&CloudOutput> = this_stack
+async fn get_instance_url(stack: &Stack) -> Result<String, Error> {
+    let outputs: Vec<&CloudOutput> = stack
         .outputs()
         .unwrap_or_default()
         .iter()
@@ -31,16 +26,12 @@ pub async fn deploy(
     if outputs.is_empty() {
         return Err(failure::err_msg("unable to query public dns"));
     }
-    let url = outputs[0].output_value().unwrap_or_default();
+    let instance_url = outputs[0].output_value().unwrap_or_default();
+    Ok(instance_url.to_string())
+}
 
-    let metadata = fs::metadata(eif)?;
-    let eif_size = metadata.len() / 1000000; // to mb
-
-    let mut mem = memory;
-    if mem == 0 {
-        mem = eif_size * 5;
-    }
-
+fn terminate_existing_enclaves(ssh_key: &str, url: &str) -> Result<(), Error> {
+    info!("Terminating any existing enclaves");
     let terminate_out = Command::new("ssh")
         .args([
             "-i",
@@ -51,14 +42,21 @@ pub async fn deploy(
             "--all",
         ])
         .output()?;
+
+    debug!(stdout=?terminate_out);
+
     if !terminate_out.status.success() {
-        return Err(failure::err_msg(format!(
+        Err(failure::err_msg(format!(
             "failed to terminate any currently running enclaves {:?}",
             terminate_out
-        )));
+        )))
+    } else {
+        Ok(())
     }
-    println!("{:?}", terminate_out);
+}
 
+fn update_allocator_memory(memory: u64, ssh_key: &str, url: &str) -> Result<(), Error> {
+    info!(memory, "Updating enclave allocator memory.");
     let sed_out = Command::new("ssh")
         .args([
             "-i",
@@ -67,18 +65,20 @@ pub async fn deploy(
             "sudo",
             "sed",
             "-i",
-            format!("'s/memory_mib: .*/memory_mib: {}/g'", mem).as_str(),
+            format!("'s/memory_mib: .*/memory_mib: {}/g'", memory).as_str(),
             "/etc/nitro_enclaves/allocator.yaml",
         ])
         .output()?;
+
+    debug!(stdout=?sed_out);
     if !sed_out.status.success() {
         return Err(failure::err_msg(format!(
             "failed to update allocator config with sed {:?}",
             sed_out
         )));
     }
-    println!("{:?}", sed_out);
 
+    info!("Restarting enclave allocator service.");
     let systemctl_out = Command::new("ssh")
         .args([
             "-i",
@@ -90,30 +90,51 @@ pub async fn deploy(
             "nitro-enclaves-allocator.service",
         ])
         .output()?;
+
+    debug!(std_out=?systemctl_out);
     if !systemctl_out.status.success() {
-        return Err(failure::err_msg(format!(
+        Err(failure::err_msg(format!(
             "failed to restart allocator after reconfig {:?}",
             systemctl_out
-        )));
+        )))
+    } else {
+        Ok(())
     }
-    println!("{:?}", systemctl_out);
+}
 
-    println!(
-        "Deploying {} to the instance...\n(this may take some time, especially for larger files)",
-        eif
+fn deploy_eif(eif_path: &str, ssh_key: &str, url: &str) -> Result<(), Error> {
+    info!(
+        "Deploying {} to the instance (this may take some time, especially for larger files)",
+        eif_path
     );
     let scp_out = Command::new("scp")
-        .args(["-i", ssh_key, eif, format!("ec2-user@{}:~", &url).as_str()])
+        .args([
+            "-i",
+            ssh_key,
+            eif_path,
+            format!("ec2-user@{}:~", url).as_str(),
+        ])
         .output()?;
+    debug!(stdout=?scp_out);
+
     if !scp_out.status.success() {
-        return Err(failure::err_msg(format!(
+        Err(failure::err_msg(format!(
             "failed to copy eif to enclave host {:?}",
             scp_out
-        )));
+        )))
+    } else {
+        Ok(())
     }
-    println!("{:?}", scp_out);
+}
 
-    println!("Running enclave...");
+fn run_eif(
+    eif_path: &str,
+    cpu_count: u64,
+    mem: &u64,
+    ssh_key: &str,
+    url: &str,
+) -> Result<Output, Error> {
+    info!("Running EIF in enclave.");
     let run_out = Command::new("ssh")
         .args([
             "-i",
@@ -124,18 +145,48 @@ pub async fn deploy(
             "--enclave-cid",
             "16",
             "--eif-path",
-            format!("~/{}", eif).as_str(),
+            format!("~/{}", eif_path).as_str(),
             "--cpu-count",
             cpu_count.to_string().as_str(),
             "--memory",
             mem.to_string().as_str(),
         ])
         .output()?;
+    debug!(stdout=?run_out);
+
     if !run_out.status.success() {
-        return Err(failure::err_msg(format!(
+        Err(failure::err_msg(format!(
             "failed to run enclave{:?}",
             run_out
-        )));
+        )))
+    } else {
+        Ok(run_out)
     }
-    Ok(run_out)
+}
+
+#[instrument(level = "debug")]
+pub async fn deploy(
+    client: &Client,
+    instance: &str,
+    eif: &String,
+    ssh_key: &String,
+    cpu_count: u64,
+    memory: Option<u64>,
+) -> Result<Output, Error> {
+    let this_stack = get_stack(client, instance).await?;
+    let url = get_instance_url(&this_stack).await?;
+
+    // If enclave memory not specified, default to 5x eif size
+    let metadata = fs::metadata(eif)?;
+    let eif_size = metadata.len() / 1000000; // to mb
+    let mem = if memory.is_none() {
+        eif_size * 5
+    } else {
+        memory.unwrap()
+    };
+
+    terminate_existing_enclaves(ssh_key, &url)?;
+    update_allocator_memory(mem, ssh_key, &url)?;
+    deploy_eif(eif, ssh_key, &url)?;
+    run_eif(eif, cpu_count, &mem, ssh_key, &url)
 }
