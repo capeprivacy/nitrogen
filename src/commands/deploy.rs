@@ -11,7 +11,7 @@ pub async fn deploy(
     instance: &str,
     eif: &String,
     ssh_key: &String,
-    cpu_count: &u8,
+    cpu_count: u64,
     memory: u64,
 ) -> Result<Output, Error> {
     let this_stack = get_stack(&client, instance).await?;
