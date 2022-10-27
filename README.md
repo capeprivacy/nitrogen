@@ -6,6 +6,14 @@
 
 Nitrogen is a tool for deploying web services to AWS Nitro Enclaves. Given a dockerfile and an ssh key, Nitrogen will spin up an EC2, configure the network, and build and deploy your web service. You get back a hostname that’s ready to go. Nitrogen is fully open source and it comes with pre-built scripts for deploying popular services like Nginx, Redis, and MongoDB.
 
+## Install
+
+Nitrogen can easily be installed with the following:
+
+```
+curl -fsSL https://raw.githubusercontent.com/capeprivacy/nitrogen/main/install.sh | sh
+```
+
 ## Commands
 
 - `nitrogen setup <STACK_NAME> <KEY_NAME> --instance-type <EC2_INSTANCE_TYPE> -p <PORT> -s <SSH_LOCATION>`
