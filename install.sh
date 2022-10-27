@@ -35,10 +35,6 @@ main() {
 		esac
 	fi
 
-	# https://github.com/capeprivacy/nitrogen/releases/download/v0.1.0/nitrogen_v0.1.0_x86_64-apple-darwin.zip
-	# https://github.com/capeprivacy/nitrogen/releases/download/v0.1.0/nitrogen_v0.1.0_x86_64-unknown-linux-musl.tar.gz
-	# https://github.com/capeprivacy/nitrogen/releases/download/v0.1.0/nitrogen_v0.1.0_x86_64-pc-windows-gnu.zip
-
 	if [ $# -eq 0 ]; then
 		# get the redirect url for latest to pull the latest version
 		redirect_url=$(curl -s -L -I -o /dev/null -w '%{url_effective}' "https://github.com/capeprivacy/nitrogen/releases/latest/download")
@@ -65,10 +61,6 @@ main() {
 	if command -v nitrogen >/dev/null; then
 		echo "Run 'nitrogen --help' to get started"
 	else
-		case $SHELL in
-		/bin/zsh) shell_profile=".zshrc" ;;
-		*) shell_profile=".bashrc" ;;
-		esac
 		echo "Run the following to make nitrogen accessible globally:"
 		echo "  sudo cp $bin_dir/nitrogen /usr/local/bin/"
 		echo "Run '$exe --help' to get started"
