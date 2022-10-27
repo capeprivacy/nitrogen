@@ -1,4 +1,10 @@
+use rand::{distributions::Alphanumeric, Rng};
+use std::env::temp_dir;
+use std::fs::{create_dir, File};
 use std::io;
+use std::io::Write;
+use std::path::Path;
+use std::time::Duration;
 
 use aws_sdk_cloudformation::Client;
 use clap::{Parser, Subcommand};
@@ -6,6 +12,12 @@ use failure::Error;
 use nitrogen::commands::{build, delete, deploy, setup};
 use nitrogen::template::SETUP_TEMPLATE;
 use tracing::{debug, info};
+
+use rust_embed::{EmbeddedFile, RustEmbed};
+
+#[derive(RustEmbed)]
+#[folder = "examples/"]
+struct Asset;
 
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
@@ -57,7 +69,7 @@ enum Commands {
         ssh_key: String,
         /// Number of CPUs to provision for the enclave
         #[arg(short, long, default_value_t = 2)]
-        cpu_count: u8,
+        cpu_count: u64,
         /// Memory in MB to provision for the enclave. Defaults to 5x EIF size if not supplied.
         #[arg(short, long)]
         memory: Option<u64>,
@@ -67,6 +79,25 @@ enum Commands {
     Delete {
         /// Name of the provisioned instance
         name: String,
+    },
+
+    Start {
+        name: String,
+
+        /// EC2 key-pair to use for the provisioned instance
+        key_name: String,
+
+        /// EC2 key-pair to use for the provisioned instance
+        public_key: String,
+        /// EC2-instance type. Must be Nitro compatible
+        #[arg(long, default_value_t = String::from("m5a.xlarge"))]
+        instance_type: String,
+        /// EC2-instance port for socat enclave connection
+        #[arg(short, long, default_value_t = 5000)]
+        port: usize,
+        /// IP address range that can be used to SSH to the EC2 instance.
+        #[arg(short, long, default_value_t = String::from("0.0.0.0/0"))]
+        ssh_location: String,
     },
 }
 
@@ -140,7 +171,7 @@ async fn main() -> Result<(), Error> {
             info!(eif, "Deploying EIF to {}", instance);
             let shared_config = aws_config::from_env().load().await;
             let client = Client::new(&shared_config);
-            let out = deploy(&client, &instance, &eif, &ssh_key, &cpu_count, memory).await?;
+            let out = deploy(&client, &instance, &eif, &ssh_key, cpu_count, memory).await?;
             debug!("{:?}", out);
             Ok(())
         }
@@ -152,5 +183,82 @@ async fn main() -> Result<(), Error> {
             delete(&client, &name).await?;
             Ok(())
         }
+        Commands::Start {
+            name,
+            key_name,
+            port,
+            instance_type,
+            ssh_location,
+            public_key,
+        } => {
+            let dockerfile =
+                Asset::get(&format!("{}/Dockerfile", name)).expect("unable to get dockerfile");
+            let appsh = Asset::get(&format!("{}/app.sh", name)).expect("unable to get app.sh");
+            let runsh = Asset::get(&format!("{}/run.sh", name)).expect("unable to get run.sh");
+
+            let dir = temp_dir();
+
+            let random_id: String = rand::thread_rng()
+                .sample_iter(&Alphanumeric)
+                .take(7)
+                .map(char::from)
+                .collect();
+
+            let id = format!("{}-{}", name, random_id);
+
+            let proj_dir = dir.as_path().join(&id);
+
+            create_dir(&proj_dir)?;
+
+            let dockerfile_path = &proj_dir.join("Dockerfile");
+
+            create_file(dockerfile_path, dockerfile)?;
+            create_file(&proj_dir.join("run.sh"), appsh)?;
+            create_file(&proj_dir.join("app.sh"), runsh)?;
+
+            let ssh_location = ssh_location.to_string();
+            let instance_type = instance_type.to_string();
+            let setup_template = SETUP_TEMPLATE.to_string();
+            let shared_config = aws_config::from_env().load().await;
+            let client = Client::new(&shared_config);
+            setup(
+                &client,
+                &setup_template,
+                &id,
+                &instance_type,
+                &port,
+                &key_name,
+                &ssh_location,
+            )
+            .await?;
+
+            // TODO should save this somewhere else than their current directory
+            let eif_path = &format!("{}.eif", name);
+
+            build(
+                &dockerfile_path.to_str().unwrap().to_string(),
+                &proj_dir.to_str().unwrap().to_string(),
+                eif_path,
+            )
+            .await?;
+
+            println!("Sleeping for 20s to give ec2 instance a chance to boot...");
+            tokio::time::sleep(Duration::from_secs(20)).await;
+
+            let out = deploy(&client, &id, eif_path, &public_key, 2, None).await?;
+
+            println!("{:?}", out);
+
+            Ok(())
+        }
     }
+}
+
+fn create_file(path: &Path, embedded: EmbeddedFile) -> Result<(), Error> {
+    let mut f = File::create(path)?;
+    let bytes = embedded.data.as_ref();
+
+    f.write_all(bytes)?;
+
+    Ok(())
 }

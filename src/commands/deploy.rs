@@ -129,7 +129,7 @@ fn deploy_eif(eif_path: &str, ssh_key: &str, url: &str) -> Result<(), Error> {
 
 fn run_eif(
     eif_path: &str,
-    cpu_count: &u8,
+    cpu_count: u64,
     mem: &u64,
     ssh_key: &str,
     url: &str,
@@ -170,7 +170,7 @@ pub async fn deploy(
     instance: &str,
     eif: &String,
     ssh_key: &String,
-    cpu_count: &u8,
+    cpu_count: u64,
     memory: Option<u64>,
 ) -> Result<Output, Error> {
     let this_stack = get_stack(client, instance).await?;
