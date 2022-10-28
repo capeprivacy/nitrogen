@@ -7,12 +7,11 @@ use tracing::instrument;
 
 #[instrument(level = "debug")]
 pub async fn build(
-    dockerfile: &String,
-    context: &String,
+    dockerfile_dir: &String,
     eif_name: &String,
 ) -> Result<Output, Error> {
     let out = Command::new("docker")
-        .args(["build", "-t", "nitrogen-build", context, "-f", dockerfile])
+        .args(["build", "-t", "nitrogen-build", dockerfile_dir, "-f", &format!("{}/.", dockerfile_dir)])
         .output()
         .await?;
     if !out.status.success() {
