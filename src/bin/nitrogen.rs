@@ -50,10 +50,8 @@ enum Commands {
 
     /// Build a Nitro EIF from a given Dockerfile
     Build {
-        /// Docker context directory
-        context: String,
-        /// Dockerfile location
-        dockerfile: String,
+        /// Dockerfile directory
+        dockerfile_dir: String,
         /// Output EIF location
         #[arg(short, long, default_value_t = String::from("./nitrogen.eif"))]
         eif: String,
@@ -153,12 +151,11 @@ async fn main() -> Result<(), Error> {
             Ok(())
         }
         Commands::Build {
-            dockerfile,
-            context,
+            dockerfile_dir,
             eif,
         } => {
-            info!(context, dockerfile, "Building EIF from dockerfile.");
-            let out = build(&dockerfile, &context, &eif).await?;
+            info!(dockerfile_dir, "Building EIF from dockerfile.");
+            let out = build(&dockerfile_dir, &eif).await?;
             debug!(docker_output=?out, "Docker output:");
             Ok(())
         }
@@ -237,7 +234,6 @@ async fn main() -> Result<(), Error> {
             let eif_path = &format!("{}.eif", name);
 
             build(
-                &dockerfile_path.to_str().unwrap().to_string(),
                 &proj_dir.to_str().unwrap().to_string(),
                 eif_path,
             )
