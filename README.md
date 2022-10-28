@@ -53,7 +53,7 @@ $ nitrogen deploy nitrogen-test nginx.eif ~/.ssh/id_rsa
 ```
 
 ```sh
-$ curl https://ec2-1-234-56-789.compute-1.amazonaws.com/
+$ curl http://ec2-1-234-56-789.compute-1.amazonaws.com/
 
 > Hello World
 ```
