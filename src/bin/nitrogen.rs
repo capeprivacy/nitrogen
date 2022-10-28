@@ -62,6 +62,7 @@ enum Commands {
         /// Domain of the provisioned ec2 instance
         instance: String,
         /// Filepath to EIF
+        #[arg(short, long, default_value_t = String::from("./nitrogen.eif"))]
         eif: String,
         /// Filepath to SSH key for the instance
         ssh_key: String,
