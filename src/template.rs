@@ -5,10 +5,9 @@ pub const SETUP_TEMPLATE: &str = r##"{
   "Description" : "AWS CloudFormation Sample Template EC2InstanceWithSecurityGroupSample: Create an Amazon EC2 instance running the Amazon Linux AMI. The AMI is chosen based on the region in which the stack is run. This example creates an EC2 security group for the instance to give you SSH access. **WARNING** This template creates an Amazon EC2 instance. You will be billed for the AWS resources used if you create a stack from this template.",
 
   "Parameters" : {
-    "KeyName": {
-      "Description" : "Name of an existing EC2 KeyPair to enable SSH access to the instance",
-      "Type": "AWS::EC2::KeyPair::KeyName",
-      "ConstraintDescription" : "must be the name of an existing EC2 KeyPair."
+    "PublicKey": {
+      "Description" : "Public key material of pair for SSH access to the instance",
+      "Type": "String"
     },
 
     "InstanceName": {
@@ -45,6 +44,14 @@ pub const SETUP_TEMPLATE: &str = r##"{
   },
 
   "Resources" : {
+      "ImportedKeyPair": {
+        "Type": "AWS::EC2::KeyPair",
+        "Properties": {
+            "KeyName": { "Ref": "InstanceName" },
+            "PublicKeyMaterial": { "Ref": "PublicKey"}
+        }
+    },
+
     "EC2Instance" : {
       "Type" : "AWS::EC2::Instance",
       "Metadata": {
@@ -83,7 +90,7 @@ pub const SETUP_TEMPLATE: &str = r##"{
       "Properties" : {
         "InstanceType" : { "Ref" : "InstanceType" },
         "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
-        "KeyName" : { "Ref" : "KeyName" },
+        "KeyName" : { "Ref" : "ImportedKeyPair" },
         "ImageId" : { "Ref" : "LatestAmiId" },
         "EnclaveOptions": {
             "Enabled": true

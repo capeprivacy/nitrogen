@@ -89,7 +89,7 @@
       "Properties" : {
         "InstanceType" : { "Ref" : "InstanceType" },
         "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
-        "KeyName" : { "Ref" : "KeyName" },
+        "KeyName" : { "Ref" : "ImportedKeyPair" },
         "ImageId" : { "Ref" : "LatestAmiId" },
         "EnclaveOptions": {
             "Enabled": true

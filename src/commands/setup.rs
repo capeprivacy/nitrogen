@@ -5,6 +5,7 @@ use aws_sdk_cloudformation::{
 };
 use failure::Error;
 use tracing::{info, instrument};
+use std::fs;
 
 fn lift_to_param(key: impl Into<String>, value: impl Into<String>) -> Parameter {
     Parameter::builder()
@@ -61,13 +62,15 @@ pub async fn setup(
     public_key_file: &String,
     ssh_location: &String,
 ) -> Result<Vec<(String, String)>, Error> {
+    let public_key = fs::read_to_string(public_key_file)?;
+    
     let stack_output = setup_stack(
         client,
         setup_template,
         name,
         instance_type,
         port,
-        public_key,
+        &public_key,
         ssh_location,
     )
     .await?;
