@@ -19,7 +19,7 @@ async fn setup_stack(
     name: &String,
     instance_type: &String,
     port: &usize,
-    key_name: &String,
+    public_key: &String,
     ssh_location: &String,
 ) -> Result<CreateStackOutput, Error> {
     let stack = client
@@ -29,7 +29,7 @@ async fn setup_stack(
         .parameters(lift_to_param("InstanceName", name))
         .parameters(lift_to_param("InstanceType", instance_type))
         .parameters(lift_to_param("Port", port.to_string()))
-        .parameters(lift_to_param("KeyName", key_name))
+        .parameters(lift_to_param("PublicKey", public_key))
         .parameters(lift_to_param("SSHLocation", ssh_location));
     let stack_output = stack.send().await?;
     Ok(stack_output)
@@ -58,7 +58,7 @@ pub async fn setup(
     name: &String,
     instance_type: &String,
     port: &usize,
-    key_name: &String,
+    public_key_file: &String,
     ssh_location: &String,
 ) -> Result<Vec<(String, String)>, Error> {
     let stack_output = setup_stack(
@@ -67,7 +67,7 @@ pub async fn setup(
         name,
         instance_type,
         port,
-        key_name,
+        public_key,
         ssh_location,
     )
     .await?;

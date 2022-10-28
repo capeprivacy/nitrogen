@@ -16,7 +16,7 @@ curl -fsSL https://raw.githubusercontent.com/capeprivacy/nitrogen/main/install.s
 
 ## Commands
 
-- `nitrogen setup <STACK_NAME> <KEY_NAME> --instance-type <EC2_INSTANCE_TYPE> -p <PORT> -s <SSH_LOCATION>`
+- `nitrogen setup <STACK_NAME> <public_key_file> --instance-type <EC2_INSTANCE_TYPE> -p <PORT> -s <SSH_LOCATION>`
 - `nitrogen build <DOCKER_CONTEXT> <DOCKERFILE> --eif <EIF_LOCATION>`
 - `nitrogen deploy <EC2_HOSTNAME> <EIF> <SSH_KEY> <CPU_COUNT> <MEMORY>`
 - `nitrogen delete <EC2_HOSTNAME>`

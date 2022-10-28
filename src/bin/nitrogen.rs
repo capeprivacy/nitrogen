@@ -35,8 +35,8 @@ enum Commands {
     Setup {
         /// Name of the CloudFormation stack/provisioned EC2 instance
         name: String,
-        /// EC2 key-pair to use for the provisioned instance
-        key_name: String,
+        /// File of public key to be used for ssh with the provisioned instance
+        public_key_file: String,
         /// EC2-instance type. Must be Nitro compatible
         #[arg(long, default_value_t = String::from("m5a.xlarge"))]
         instance_type: String,
@@ -85,7 +85,7 @@ enum Commands {
         name: String,
 
         /// EC2 key-pair to use for the provisioned instance
-        key_name: String,
+        public_key_file: String,
 
         /// EC2 key-pair to use for the provisioned instance
         public_key: String,
@@ -120,7 +120,7 @@ async fn main() -> Result<(), Error> {
             name,
             instance_type,
             port,
-            key_name,
+            public_key_file,
             ssh_location,
         } => {
             let ssh_location = ssh_location.to_string();
@@ -135,7 +135,7 @@ async fn main() -> Result<(), Error> {
                 &name,
                 &instance_type,
                 &port,
-                &key_name,
+                &public_key_file,
                 &ssh_location,
             )
             .await?;
@@ -185,7 +185,7 @@ async fn main() -> Result<(), Error> {
         }
         Commands::Start {
             name,
-            key_name,
+            public_key_file,
             port,
             instance_type,
             ssh_location,
@@ -227,7 +227,7 @@ async fn main() -> Result<(), Error> {
                 &id,
                 &instance_type,
                 &port,
-                &key_name,
+                &public_key_file,
                 &ssh_location,
             )
             .await?;
