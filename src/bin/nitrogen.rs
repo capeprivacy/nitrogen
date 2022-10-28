@@ -35,8 +35,8 @@ enum Commands {
     Setup {
         /// Name of the CloudFormation stack/provisioned EC2 instance
         name: String,
-        /// EC2 key-pair to use for the provisioned instance
-        key_name: String,
+        /// File of public key to be used for ssh with the provisioned instance
+        public_key_file: String,
         /// EC2-instance type. Must be Nitro compatible
         #[arg(long, default_value_t = String::from("m5a.xlarge"))]
         instance_type: String,
@@ -81,13 +81,12 @@ enum Commands {
     },
 
     Start {
+        /// Name of the CloudFormation stack/provisioned EC2 instance
         name: String,
-
-        /// EC2 key-pair to use for the provisioned instance
-        key_name: String,
-
-        /// EC2 key-pair to use for the provisioned instance
-        public_key: String,
+        /// File of public key to be used for ssh with the provisioned instance
+        public_key_file: String,
+        /// File of private key to be used for ssh
+        private_key: String,
         /// EC2-instance type. Must be Nitro compatible
         #[arg(long, default_value_t = String::from("m5a.xlarge"))]
         instance_type: String,
@@ -119,7 +118,7 @@ async fn main() -> Result<(), Error> {
             name,
             instance_type,
             port,
-            key_name,
+            public_key_file,
             ssh_location,
         } => {
             let ssh_location = ssh_location.to_string();
@@ -134,7 +133,7 @@ async fn main() -> Result<(), Error> {
                 &name,
                 &instance_type,
                 &port,
-                &key_name,
+                &public_key_file,
                 &ssh_location,
             )
             .await?;
@@ -183,11 +182,11 @@ async fn main() -> Result<(), Error> {
         }
         Commands::Start {
             name,
-            key_name,
+            public_key_file,
             port,
             instance_type,
             ssh_location,
-            public_key,
+            private_key,
         } => {
             let dockerfile =
                 Asset::get(&format!("{}/Dockerfile", name)).expect("unable to get dockerfile");
@@ -225,7 +224,7 @@ async fn main() -> Result<(), Error> {
                 &id,
                 &instance_type,
                 &port,
-                &key_name,
+                &public_key_file,
                 &ssh_location,
             )
             .await?;
@@ -242,7 +241,7 @@ async fn main() -> Result<(), Error> {
             println!("Sleeping for 20s to give ec2 instance a chance to boot...");
             tokio::time::sleep(Duration::from_secs(20)).await;
 
-            let out = deploy(&client, &id, eif_path, &public_key, 2, None).await?;
+            let out = deploy(&client, &id, eif_path, &private_key, 2, None).await?;
 
             println!("{:?}", out);
 
