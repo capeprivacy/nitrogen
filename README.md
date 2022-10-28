@@ -14,12 +14,19 @@ Nitrogen can easily be installed with the following:
 curl -fsSL https://raw.githubusercontent.com/capeprivacy/nitrogen/main/install.sh | sh
 ```
 
+_Note: An AWS account is required. If you have AWS cli configured you can [retrieve your credentials](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-files.html#cli-configure-files-where) with `cat ~/.aws/credentials`. See [troubleshooting](https://github.com/capeprivacy/nitrogen#troubleshooting) if your AWS account uses MFA_
+
+```bash
+export AWS_ACCESS_KEY_ID=<YOUR ACCESS KEY>
+export AWS_SECRET_ACCESS_KEY=<YOUR SECRET>
+```
+
 ## Commands
 
-- `nitrogen setup <STACK_NAME> <public_key_file> --instance-type <EC2_INSTANCE_TYPE> -p <PORT> -s <SSH_LOCATION>`
-- `nitrogen build <DOCKER_CONTEXT> <DOCKERFILE> --eif <EIF_LOCATION>`
-- `nitrogen deploy <EC2_HOSTNAME> <EIF> <SSH_KEY> <CPU_COUNT> <MEMORY>`
-- `nitrogen delete <EC2_HOSTNAME>`
+- `nitrogen setup <stack_name> <ssh_public_key>`
+- `nitrogen build <dockerfile_directory>`
+- `nitrogen deploy <stack_name> <ssh_private_key>`
+- `nitrogen delete <stack_name>`
 
 ## Features
 
@@ -33,28 +40,24 @@ curl -fsSL https://raw.githubusercontent.com/capeprivacy/nitrogen/main/install.s
 ## Examples
 
 ```sh
-$ nitrogen setup nitrogen-test ec2-key --instance-type m5n.16xlarge
-
+$ nitrogen setup nitrogen-test ~/.ssh/id_rsa.pub --instance-type m5n.16xlarge
 >  INFO nitrogen: Spinning up enclave instance 'nitrogen-test'.
 >  INFO nitrogen::commands::setup: Successfully created enclave instance. stack_id="arn:aws:cloudformation:us-east-1:657861442343:stack/nitrogen-test/c93c7c80-5581-11ed-8a2b-0e2f3ffeccf1"
 >  INFO nitrogen: User enclave information: name="nitrogen-test" instance_id="i-07daa284594ff02bc" public_ip="44.197.181.14" availability_zone="us-east-1b" public_dns="ec2-44-197-181-14.compute-1.amazonaws.com"
 ```
 
 ```sh
-$ nitrogen build examples/nginx/ examples/nginx/Dockerfile --eif ./nginx.eif
-
-> Filename: nginx.eif
+$ nitrogen build examples/nginx/
+> Filename: nitrogen.eif
 ```
 
 ```sh
-$ nitrogen deploy nitrogen-test nginx.eif ~/.ssh/id_rsa
-
-> Listening: ec2-1-234-56-789.compute-1.amazonaws.com:443
+$ nitrogen deploy nitrogen-test ~/.ssh/id_rsa
+> Listening: ec2-1-234-56-789.compute-1.amazonaws.com:5000
 ```
 
 ```sh
-$ curl http://ec2-1-234-56-789.compute-1.amazonaws.com/
-
+$ curl http://ec2-1-234-56-789.compute-1.amazonaws.com:5000/
 > Hello World
 ```
 
