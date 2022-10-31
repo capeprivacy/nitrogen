@@ -139,7 +139,7 @@ async fn main() -> Result<(), Error> {
             .await?;
 
             info!(
-                "Open ports:",
+                "Open ports: {}, {}",
                 "22",
                 port,
             );
