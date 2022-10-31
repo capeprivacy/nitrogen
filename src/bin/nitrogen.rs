@@ -36,7 +36,7 @@ enum Commands {
         /// Name of the CloudFormation stack/provisioned EC2 instance
         name: String,
         /// File of public key to be used for ssh with the provisioned instance
-        public_key_file: String,
+        public_key: String,
         /// EC2-instance type. Must be Nitro compatible
         #[arg(long, default_value_t = String::from("m5a.xlarge"))]
         instance_type: String,
@@ -82,9 +82,9 @@ enum Commands {
 
     Start {
         /// Name of the CloudFormation stack/provisioned EC2 instance
-        name: String,
+        service: String,
         /// File of public key to be used for ssh with the provisioned instance
-        public_key_file: String,
+        public_key: String,
         /// File of private key to be used for ssh
         private_key: String,
         /// EC2-instance type. Must be Nitro compatible
@@ -118,7 +118,7 @@ async fn main() -> Result<(), Error> {
             name,
             instance_type,
             port,
-            public_key_file,
+            public_key,
             ssh_location,
         } => {
             let ssh_location = ssh_location.to_string();
@@ -133,7 +133,7 @@ async fn main() -> Result<(), Error> {
                 &name,
                 &instance_type,
                 &port,
-                &public_key_file,
+                &public_key,
                 &ssh_location,
             )
             .await?;
@@ -181,17 +181,17 @@ async fn main() -> Result<(), Error> {
             Ok(())
         }
         Commands::Start {
-            name,
-            public_key_file,
+            service,
+            public_key,
             port,
             instance_type,
             ssh_location,
             private_key,
         } => {
             let dockerfile =
-                Asset::get(&format!("{}/Dockerfile", name)).expect("unable to get dockerfile");
-            let appsh = Asset::get(&format!("{}/app.sh", name)).expect("unable to get app.sh");
-            let runsh = Asset::get(&format!("{}/run.sh", name)).expect("unable to get run.sh");
+                Asset::get(&format!("{}/Dockerfile", service)).expect("unable to get dockerfile");
+            let appsh = Asset::get(&format!("{}/app.sh", service)).expect("unable to get app.sh");
+            let runsh = Asset::get(&format!("{}/run.sh", service)).expect("unable to get run.sh");
 
             let dir = temp_dir();
 
@@ -201,7 +201,7 @@ async fn main() -> Result<(), Error> {
                 .map(char::from)
                 .collect();
 
-            let id = format!("{}-{}", name, random_id);
+            let id = format!("{}-{}", service, random_id);
 
             let proj_dir = dir.as_path().join(&id);
 
@@ -224,26 +224,22 @@ async fn main() -> Result<(), Error> {
                 &id,
                 &instance_type,
                 &port,
-                &public_key_file,
+                &public_key,
                 &ssh_location,
             )
             .await?;
 
             // TODO should save this somewhere else than their current directory
-            let eif_path = &format!("{}.eif", name);
+            let eif_path = &format!("{}.eif", service);
 
-            build(
-                &proj_dir.to_str().unwrap().to_string(),
-                eif_path,
-            )
-            .await?;
+            build(&proj_dir.to_str().unwrap().to_string(), eif_path).await?;
 
-            println!("Sleeping for 20s to give ec2 instance a chance to boot...");
+            info!("Sleeping for 20s to give ec2 instance a chance to boot...");
             tokio::time::sleep(Duration::from_secs(20)).await;
 
             let out = deploy(&client, &id, eif_path, &private_key, 2, None).await?;
 
-            println!("{:?}", out);
+            info!("{:?}", out);
 
             Ok(())
         }
