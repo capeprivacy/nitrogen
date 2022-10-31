@@ -33,7 +33,7 @@ struct Cli {
 enum Commands {
     /// Provision nitro-enabled ec2 instances
     Setup {
-        /// Name of the CloudFormation stack/provisioned EC2 instance
+        /// Name of the CloudFormation stack (& its provisioned EC2 instance)
         name: String,
         /// File of public key to be used for ssh with the provisioned instance
         public_key: String,
@@ -59,8 +59,8 @@ enum Commands {
 
     /// Deploy an EIF to a provisioned nitro ec2 instance
     Deploy {
-        /// Domain of the provisioned ec2 instance
-        instance: String,
+        /// Name of a Nitrogen-generated CloudFormation stack
+        name: String,
         /// Filepath to EIF
         #[arg(short, long, default_value_t = String::from("./nitrogen.eif"))]
         eif: String,
@@ -76,16 +76,16 @@ enum Commands {
 
     /// Delete launched ec2 instance
     Delete {
-        /// Name of the provisioned instance
+        /// Name of the CloudFormation stack to delete
         name: String,
     },
 
     Start {
-        /// Name of the CloudFormation stack/provisioned EC2 instance
+        /// Name of the service to deploy with nitrogen
         service: String,
         /// File of public key to be used for ssh with the provisioned instance
         public_key: String,
-        /// File of private key to be used for ssh
+        /// File of private key to be used for scp/ssh when deploying EIF
         private_key: String,
         /// EC2-instance type. Must be Nitro compatible
         #[arg(long, default_value_t = String::from("m5a.xlarge"))]
@@ -159,16 +159,16 @@ async fn main() -> Result<(), Error> {
             Ok(())
         }
         Commands::Deploy {
-            instance,
+            name,
             eif,
             ssh_key,
             cpu_count,
             memory,
         } => {
-            info!(eif, "Deploying EIF to {}", instance);
+            info!(eif, "Deploying EIF to {}", name);
             let shared_config = aws_config::from_env().load().await;
             let client = Client::new(&shared_config);
-            let out = deploy(&client, &instance, &eif, &ssh_key, cpu_count, memory).await?;
+            let out = deploy(&client, &name, &eif, &ssh_key, cpu_count, memory).await?;
             debug!("{:?}", out);
             Ok(())
         }
@@ -201,9 +201,9 @@ async fn main() -> Result<(), Error> {
                 .map(char::from)
                 .collect();
 
-            let id = format!("{}-{}", service, random_id);
+            let stack_name = format!("{}-{}", service, random_id);
 
-            let proj_dir = dir.as_path().join(&id);
+            let proj_dir = dir.as_path().join(&stack_name);
 
             create_dir(&proj_dir)?;
 
@@ -221,7 +221,7 @@ async fn main() -> Result<(), Error> {
             setup(
                 &client,
                 &setup_template,
-                &id,
+                &stack_name,
                 &instance_type,
                 &port,
                 &public_key,
@@ -237,7 +237,7 @@ async fn main() -> Result<(), Error> {
             info!("Sleeping for 20s to give ec2 instance a chance to boot...");
             tokio::time::sleep(Duration::from_secs(20)).await;
 
-            let out = deploy(&client, &id, eif_path, &private_key, 2, None).await?;
+            let out = deploy(&client, &stack_name, eif_path, &private_key, 2, None).await?;
 
             info!("{:?}", out);
 
