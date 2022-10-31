@@ -138,6 +138,7 @@ async fn main() -> Result<(), Error> {
             )
             .await?;
 
+            info!("Open ports: {}, {}", "22", port,);
             info!(
                 name,
                 instance_id = outputs[0].1,
