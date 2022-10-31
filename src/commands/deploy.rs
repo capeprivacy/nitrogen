@@ -167,13 +167,13 @@ fn run_eif(
 #[instrument(level = "debug")]
 pub async fn deploy(
     client: &Client,
-    instance: &str,
+    stack_name: &str,
     eif: &String,
     ssh_key: &String,
     cpu_count: u64,
     memory: Option<u64>,
 ) -> Result<Output, Error> {
-    let this_stack = get_stack(client, instance).await?;
+    let this_stack = get_stack(client, stack_name).await?;
     let url = get_instance_url(&this_stack).await?;
 
     // If enclave memory not specified, default to 5x eif size
