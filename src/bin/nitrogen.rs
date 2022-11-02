@@ -9,8 +9,8 @@ use std::time::Duration;
 use aws_sdk_cloudformation::Client;
 use clap::{Parser, Subcommand};
 use failure::Error;
-use nitrogen_lib::commands::{build, delete, deploy, setup};
-use nitrogen_lib::template::SETUP_TEMPLATE;
+use nitrogen::commands::{build, delete, deploy, setup};
+use nitrogen::template::SETUP_TEMPLATE;
 use tracing::{debug, info};
 
 use rust_embed::{EmbeddedFile, RustEmbed};
