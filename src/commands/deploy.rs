@@ -155,12 +155,31 @@ fn run_eif(
     debug!(stdout=?run_out);
 
     if !run_out.status.success() {
-        Err(failure::err_msg(format!(
+        return Err(failure::err_msg(format!(
             "failed to run enclave{:?}",
             run_out
         )))
+    } 
+
+    info!("Check enclave status...");
+    let describe_out = Command::new("ssh")
+        .args([
+            "-i",
+            ssh_key,
+            format!("ec2-user@{}", url).as_str(),
+            "nitro-cli",
+            "describe-enclaves",
+        ])
+        .output()?;
+    debug!(stdout=?describe_out);
+
+    if !describe_out.status.success() {
+        Err(failure::err_msg(format!(
+            "failed to get enclave info{:?}",
+            describe_out
+        )))
     } else {
-        Ok(run_out)
+        Ok(describe_out)
     }
 }
 
