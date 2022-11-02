@@ -1,5 +1,5 @@
 [package]
-name = "nitrogen"
+name = "nitrogen-lib"
 version = "0.2.0"
 description = "Nitrogen is a tool for deploying web services to AWS Nitro Enclaves."
 license = "Apache-2.0"
