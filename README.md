@@ -85,3 +85,7 @@ that you have already set in your shell.
 ```
 . sts.sh <ACCOUNT> <USER NAME> <CODE>
 ```
+
+## Contributors
+
+Thank you to [@kalebpace](https://github.com/kalebpace) for contributing the name for the [nitrogen crate](https://crates.io/crates/nitrogen).
