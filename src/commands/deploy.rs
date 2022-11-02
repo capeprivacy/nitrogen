@@ -158,8 +158,8 @@ fn run_eif(
         return Err(failure::err_msg(format!(
             "failed to run enclave{:?}",
             run_out
-        )))
-    } 
+        )));
+    }
 
     info!("Check enclave status...");
     let describe_out = Command::new("ssh")
