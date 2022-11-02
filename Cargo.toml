@@ -1,8 +1,9 @@
 [package]
-name = "nitrogen-lib"
+name = "nitrogen"
 version = "0.2.0"
 description = "Nitrogen is a tool for deploying web services to AWS Nitro Enclaves."
 license = "Apache-2.0"
+repository = "https://github.com/capeprivacy/nitrogen"
 edition = "2021"
 keywords = ["aws", "nitro", "enclave"]
 
