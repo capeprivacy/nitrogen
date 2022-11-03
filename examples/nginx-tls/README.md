@@ -58,3 +58,11 @@ $ curl https://ec2-1-234-56-789.compute-1.amazonaws.com:5000/
 >    </body>
 > </html>
 ```
+
+## Clean up
+
+Make sure to run `nitrogen delete` to clean up the cloud formation stack when you're done:
+
+```
+nitrogen delete nitrogen-nginx-tls
+```
