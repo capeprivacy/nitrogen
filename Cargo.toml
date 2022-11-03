@@ -1,7 +1,11 @@
 [package]
 name = "nitrogen"
-version = "0.1.0"
+version = "0.2.2-alpha.0"
+description = "Nitrogen is a tool for deploying web services to AWS Nitro Enclaves."
+license = "Apache-2.0"
+repository = "https://github.com/capeprivacy/nitrogen"
 edition = "2021"
+keywords = ["aws", "nitro", "enclave"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
