@@ -4,6 +4,8 @@ use aws_sdk_cloudformation::{
     Client,
 };
 use failure::Error;
+use serde_json::Value;
+use std::str;
 use std::{
     fs,
     process::{Command, Output},
@@ -56,7 +58,7 @@ fn terminate_existing_enclaves(ssh_key: &str, url: &str) -> Result<(), Error> {
 }
 
 fn update_allocator_memory(memory: u64, ssh_key: &str, url: &str) -> Result<(), Error> {
-    info!(memory, "Updating enclave allocator memory.");
+    info!(memory, "Updating enclave allocator memory (in MB).");
     let sed_out = Command::new("ssh")
         .args([
             "-i",
@@ -104,7 +106,7 @@ fn update_allocator_memory(memory: u64, ssh_key: &str, url: &str) -> Result<(), 
 
 fn deploy_eif(eif_path: &str, ssh_key: &str, url: &str) -> Result<(), Error> {
     info!(
-        "Deploying {} to the instance {} \n(this may take some time, especially for larger files)",
+        "Deploying {} to the instance http://{} (this may take some time, especially for larger files)",
         eif_path,
         url
     );
@@ -162,6 +164,14 @@ fn run_eif(
         )));
     }
 
+    match check_enclave_status(ssh_key, url) {
+        Ok(result) => info!("Enclave status: {}", result),
+        Err(err) => info!("Error {}", err),
+    };
+    return Ok(run_out);
+}
+
+fn check_enclave_status(ssh_key: &str, url: &str) -> Result<String, Error> {
     info!("Check enclave status...");
     let describe_out = Command::new("ssh")
         .args([
@@ -175,13 +185,27 @@ fn run_eif(
     debug!(stdout=?describe_out);
 
     if !describe_out.status.success() {
-        Err(failure::err_msg(format!(
+        return Err(failure::err_msg(format!(
             "failed to get enclave info{:?}",
             describe_out
-        )))
-    } else {
-        Ok(describe_out)
-    }
+        )));
+    };
+
+    let json: Value = serde_json::from_slice(&describe_out.stdout)
+        .expect("Could not parse response from AWS as json.");
+
+    let enclave = json
+        .as_array()
+        .unwrap()
+        .get(0)
+        .expect("No running enclave detected, please try deployment again.");
+
+    let state = enclave
+        .get("State")
+        .expect("No state field in enclave description")
+        .as_str();
+
+    return Ok(String::from(state.unwrap_or("DOWN")));
 }
 
 #[instrument(level = "debug")]
