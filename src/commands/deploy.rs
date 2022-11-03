@@ -104,8 +104,9 @@ fn update_allocator_memory(memory: u64, ssh_key: &str, url: &str) -> Result<(), 
 
 fn deploy_eif(eif_path: &str, ssh_key: &str, url: &str) -> Result<(), Error> {
     info!(
-        "Deploying {} to the instance (this may take some time, especially for larger files)",
-        eif_path
+        "Deploying {} to the instance {} \n(this may take some time, especially for larger files)",
+        eif_path,
+        url
     );
     let scp_out = Command::new("scp")
         .args([
