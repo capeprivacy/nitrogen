@@ -41,7 +41,7 @@ main() {
 		version=${redirect_url##*/}
 		nitrogen_uri="https://github.com/capeprivacy/nitrogen/releases/latest/download/nitrogen_${version}_${target}${ext}"
 	else
-		nitrogen_uri="https://github.com/capeprivacy/nitrogen/releases/download/${1}/cape_${target}${ext}"
+		nitrogen_uri="https://github.com/capeprivacy/nitrogen/releases/download/${1}/nitrogen_${target}${ext}"
 	fi
 
 	bin_dir="$nitrogen_install/bin"
