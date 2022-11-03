@@ -168,7 +168,8 @@ fn run_eif(
         Ok(result) => info!("Enclave status: {}", result),
         Err(err) => info!("Error {}", err),
     };
-    return Ok(run_out);
+    
+    Ok(run_out);
 }
 
 fn check_enclave_status(ssh_key: &str, url: &str) -> Result<String, Error> {
@@ -205,7 +206,7 @@ fn check_enclave_status(ssh_key: &str, url: &str) -> Result<String, Error> {
         .expect("No state field in enclave description")
         .as_str();
 
-    return Ok(String::from(state.unwrap_or("DOWN")));
+    Ok(String::from(state.unwrap_or("DOWN")));
 }
 
 #[instrument(level = "debug")]
