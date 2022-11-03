@@ -168,7 +168,7 @@ fn run_eif(
         Ok(result) => info!("Enclave status: {}", result),
         Err(err) => info!("Error {}", err),
     };
-    
+
     Ok(run_out);
 }
 
