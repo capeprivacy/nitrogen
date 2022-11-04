@@ -22,7 +22,18 @@ $ nitrogen setup nitrogen-nginx-tls ~/.ssh/id_rsa.pub --instance-type m5n.16xlar
 >  INFO nitrogen: User enclave information: name="nitrogen-nginx-tls" instance_id="i-07daa284594ff02bc" public_ip="44.197.181.14" availability_zone="us-east-1b" public_dns="ec2-44-197-181-14.compute-1.amazonaws.com"
 ```
 
-Next up is running `mkcert`. It requires copying the `public_dns` field from above, like so:
+Next up is running `mkcert`. It requires copying the `public_dns` field from above.
+
+If you've never run `mkcert` before you must run the following first:
+
+```sh
+$ mkcert -install
+```
+
+This installs a local CA so that your browsers and system applications will trust the certificates served by nginx in the enclave.
+
+Next you generate the certificates:
+
 
 ```sh
 $ mkcert -cert-file nitrogen.pem -key-file nitrogen.key ec2-44-197-181-14.compute-1.amazonaws.com
@@ -65,4 +76,27 @@ Make sure to run `nitrogen delete` to clean up the cloud formation stack when yo
 
 ```sh
 $ nitrogen delete nitrogen-nginx-tls
+```
+
+## Troubleshooting
+
+### Untrusted CA
+
+If you see an error like:
+
+```
+curl: (60) SSL certificate problem: unable to get local issuer certificate
+More details here: https://curl.se/docs/sslcerts.html
+
+curl failed to verify the legitimacy of the server and therefore could not
+establish a secure connection to it. To learn more about this situation and
+how to fix it, please visit the web page mentioned above.
+```
+
+`mkcert` might've failed to install the CA in the right place on your system. This can happen if your CA file path has been modified by other programs, you may need to specify the CA location (e.g. by anaconda).
+
+You can pass a custom CA to `curl` like:
+
+```
+curl https://ec2-1-234-56-789.compute-1.amazonaws.com:5000 --cacert examples/nginx-tls/nitrogen.pem
 ```
