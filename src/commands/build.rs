@@ -1,12 +1,17 @@
 use failure::Error;
 use home;
 use std::env;
+use std::path::PathBuf;
 use std::process::Output;
 use tokio::process::Command;
 use tracing::instrument;
 
 #[instrument(level = "debug")]
 pub async fn build(dockerfile_dir: &String, eif_name: &String) -> Result<Output, Error> {
+    let dockerdir = PathBuf::from(dockerfile_dir);
+    let mut dockerfile_path = PathBuf::from(dockerfile_dir);
+    dockerfile_path.push("Dockerfile");
+
     let out = Command::new("docker")
         .args([
             "build",
@@ -14,9 +19,9 @@ pub async fn build(dockerfile_dir: &String, eif_name: &String) -> Result<Output,
             "nitrogen-build",
             "--platform",
             "linux/amd64",
-            dockerfile_dir,
+            dockerdir.to_str().unwrap(),
             "-f",
-            &format!("{}/.", dockerfile_dir),
+            dockerfile_path.to_str().unwrap(),
         ])
         .output()
         .await?;
