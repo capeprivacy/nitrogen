@@ -4,7 +4,7 @@ use std::env;
 use std::path::PathBuf;
 use std::process::Output;
 use tokio::process::Command;
-use tracing::{instrument, info};
+use tracing::{info, instrument};
 
 #[instrument(level = "debug")]
 pub async fn build(dockerfile_dir: &String, eif_name: &String) -> Result<Output, Error> {
@@ -27,7 +27,10 @@ pub async fn build(dockerfile_dir: &String, eif_name: &String) -> Result<Output,
         .await?;
     if !out.status.success() {
         let stderr_str = std::str::from_utf8(&out.stderr)?;
-        return Err(failure::err_msg(format!("Docker build error: {:#?}", stderr_str)));
+        return Err(failure::err_msg(format!(
+            "Docker build error: {:#?}",
+            stderr_str
+        )));
     }
 
     let h = home::home_dir().unwrap_or_default();
@@ -41,10 +44,7 @@ pub async fn build(dockerfile_dir: &String, eif_name: &String) -> Result<Output,
             "-v",
             "/var/run/docker.sock:/var/run/docker.sock",
             "-v",
-            &format!(
-                "{}:/root/build",
-                eif_dir,
-            ),
+            &format!("{}:/root/build", eif_dir,),
             "capeprivacy/eif-builder:latest",
             "build-enclave",
             "--docker-uri",
@@ -56,7 +56,10 @@ pub async fn build(dockerfile_dir: &String, eif_name: &String) -> Result<Output,
         .await?;
     if !out.status.success() {
         let stderr_str = std::str::from_utf8(&out.stderr)?;
-        return Err(failure::err_msg(format!("Docker build error: {:#?}", stderr_str)));
+        return Err(failure::err_msg(format!(
+            "Docker build error: {:#?}",
+            stderr_str
+        )));
     } else {
         info!("EIF written to {}/{}.", eif_dir, &eif_name);
     }
