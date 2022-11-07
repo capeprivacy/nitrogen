@@ -8,14 +8,14 @@ main() {
 		exit 1
 	fi
 
-	ext=".zip"
+	ext=".tar.gz"
 	nitrogen_install="${nitrogen_INSTALL:-$HOME/.nitrogen}"
 	if [ "$OS" = "Windows_NT" ]; then
 		target="x86_64-pc-windows-gnu"
 	else
 		case $(uname -sm) in
 		"Darwin x86_64") target="x86_64-apple-darwin" ;;
-		"Darwin arm64") target="Darwin_arm64"
+		"Darwin arm64")
 			echo "Error: Official nitrogen builds for Darwin arm64 are not available" 1>&2
 			exit 1
 			;;
@@ -25,7 +25,6 @@ main() {
 			;;
 		"Linux x86_64")
 			target="x86_64-unknown-linux-musl"
-			ext=".tar.gz"
 			nitrogen_install="${nitrogen_INSTALL:-$HOME/.local}"
 			;;
 		*)
