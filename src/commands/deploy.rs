@@ -230,6 +230,7 @@ pub async fn deploy(
         memory.unwrap()
     };
 
+    info!("Using instance URL {}...", url);
     terminate_existing_enclaves(ssh_key, &url)?;
     update_allocator_memory(mem, ssh_key, &url)?;
     deploy_eif(eif, ssh_key, &url)?;
