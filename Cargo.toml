@@ -1,6 +1,6 @@
 [package]
 name = "nitrogen"
-version = "0.2.2-alpha.0"
+version = "0.2.2"
 description = "Nitrogen is a tool for deploying web services to AWS Nitro Enclaves."
 license = "Apache-2.0"
 repository = "https://github.com/capeprivacy/nitrogen"
