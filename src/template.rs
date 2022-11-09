@@ -172,4 +172,5 @@ pub const SETUP_TEMPLATE: &str = r##"{
       "Value" : { "Fn::GetAtt" : [ "EC2Instance", "PublicIp" ] }
     }
   }
-}"##;
+}
+"##;
