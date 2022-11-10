@@ -14,6 +14,7 @@ name = "helloworld-client"
 path = "src/client.rs"
 
 [dependencies]
+clap = {version = "4.0", features = ["derive"]}
 tonic = "0.8"
 prost = "0.11"
 tokio = { version = "1.0", features = ["macros", "rt-multi-thread"]}
