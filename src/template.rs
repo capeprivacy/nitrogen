@@ -136,7 +136,7 @@ pub const SETUP_TEMPLATE: &str = r##"{
       "Type" : "AWS::EC2::SecurityGroup",
       "Properties" : {
         "GroupDescription" : "Enable SSH access via port 22",
-        "SecurityGroupIngress" : [ 
+        "SecurityGroupIngress" : [
           {
             "IpProtocol" : "tcp",
             "FromPort" : "22",
@@ -144,11 +144,11 @@ pub const SETUP_TEMPLATE: &str = r##"{
             "CidrIp" : { "Ref" : "SSHLocation"}
           },
           {
-            "IpProtocol" : "tcp", 
-            "FromPort" : { "Ref" : "Port" }, 
-            "ToPort" : { "Ref" : "Port" }, 
+            "IpProtocol" : "tcp",
+            "FromPort" : { "Ref" : "Port" },
+            "ToPort" : { "Ref" : "Port" },
             "CidrIp" : "0.0.0.0/0"
-          } 
+          }
         ]
       }
     }
@@ -172,4 +172,5 @@ pub const SETUP_TEMPLATE: &str = r##"{
       "Value" : { "Fn::GetAtt" : [ "EC2Instance", "PublicIp" ] }
     }
   }
-}\n"##;
+}
+"##;
