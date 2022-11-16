@@ -12,8 +12,16 @@ Nitrogen is a tool for deploying web services to AWS Nitro Enclaves. Given a doc
 
 Nitrogen can easily be installed with the following:
 
+For Linux or Mac:
+
 ```
-curl -fsSL https://raw.githubusercontent.com/capeprivacy/nitrogen/main/install.sh | sh
+$ curl -fsSL https://raw.githubusercontent.com/capeprivacy/nitrogen/main/install.sh | sh
+```
+
+For Windows Powershell
+
+```
+$ iex (irm https://raw.githubusercontent.com/capeprivacy/nitrogen/main/install.ps1)
 ```
 
 _Note: An AWS account is required. If you have AWS cli configured you can [retrieve your credentials](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-files.html#cli-configure-files-where) with `cat ~/.aws/credentials`. See [troubleshooting](https://github.com/capeprivacy/nitrogen#troubleshooting) if your AWS account uses MFA_
