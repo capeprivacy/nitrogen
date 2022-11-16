@@ -11,7 +11,7 @@ $NitrogenBin = "$BinDir\nitrogen.exe"
 $Target = 'x86_64-pc-windows-msvc'
 
 $DownloadUrl = if (!$Version) {
-  $RedirectUrl = curl -s -L -I -o nul -w '%{url_effective}' "https://github.com/capeprivacy/nitrogen/releases/latest/download"
+  $RedirectUrl = curl.exe -s -L -I -o nul -w '%{url_effective}' "https://github.com/capeprivacy/nitrogen/releases/latest/download"
 
   $Splits = $RedirectUrl.Split("/")
   $Version = $Splits.Get($Splits.Length - 1)
