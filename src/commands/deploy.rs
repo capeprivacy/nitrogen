@@ -198,24 +198,24 @@ fn check_enclave_status(ssh_key: &str, url: &str) -> Result<(), Error> {
     let enclave_list = json.as_array().unwrap();
 
     let enclave = match enclave_list.get(0) {
-        None => return Err(failure::err_msg(format!("No running enclaves detected."))),
+        None => return Err(failure::err_msg("No running enclaves detected.")),
         Some(enclave) => enclave,
     };
 
     let state = match enclave.get("State") {
         None => {
-            return Err(failure::err_msg(format!(
-                "Enclave detected, but has no state description."
-            )))
+            return Err(failure::err_msg(
+                "Enclave detected, but has no state description.",
+            ))
         }
         Some(current_state) => current_state.as_str(),
     };
 
     match state {
         Some("RUNNING") => Ok(()),
-        _ => Err(failure::err_msg(format!(
-            "Enclave detected, but not in running state."
-        ))),
+        _ => Err(failure::err_msg(
+            "Enclave detected, but not in running state.",
+        )),
     }
 }
 
