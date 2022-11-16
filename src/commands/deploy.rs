@@ -10,7 +10,7 @@ use std::{
     fs,
     process::{Command, Output},
 };
-use tracing::{debug, info, instrument};
+use tracing::{debug, info, instrument, error};
 
 async fn get_instance_url(stack: &Stack) -> Result<String, Error> {
     let outputs: Vec<&CloudOutput> = stack
@@ -165,14 +165,14 @@ fn run_eif(
     }
 
     match check_enclave_status(ssh_key, url) {
-        Ok(result) => info!("Enclave status: {}", result),
-        Err(err) => info!("Error {}", err),
-    };
+        Ok(_) => info!("Enclave up and running!"),
+        Err(err) => error!("Error: something went wrong with deployment. {}", err),
+    }
 
     Ok(run_out)
 }
 
-fn check_enclave_status(ssh_key: &str, url: &str) -> Result<String, Error> {
+fn check_enclave_status(ssh_key: &str, url: &str) -> Result<(), Error> {
     info!("Check enclave status...");
     let describe_out = Command::new("ssh")
         .args([
@@ -195,18 +195,24 @@ fn check_enclave_status(ssh_key: &str, url: &str) -> Result<String, Error> {
     let json: Value = serde_json::from_slice(&describe_out.stdout)
         .expect("Could not parse response from AWS as json.");
 
-    let enclave = json
+    let enclave_list = json
         .as_array()
-        .unwrap()
-        .get(0)
-        .expect("No running enclave detected, please try deployment again.");
+        .unwrap();
 
-    let state = enclave
-        .get("State")
-        .expect("No state field in enclave description")
-        .as_str();
+    let enclave = match enclave_list.get(0) {
+        None => return Err(failure::err_msg(format!("No running enclaves detected."))),
+        Some(enclave) => enclave,
+    };
 
-    Ok(String::from(state.unwrap_or("DOWN")))
+    let state = match enclave.get("State") {
+        None => return Err(failure::err_msg(format!("Enclave detected, but has no state description."))),
+        Some(current_state) => current_state.as_str(),
+    };
+
+    match state {
+        Some("RUNNING") => Ok(()),
+        _ => Err(failure::err_msg(format!("Enclave detected, but not in running state."))),
+    }
 }
 
 #[instrument(level = "debug")]

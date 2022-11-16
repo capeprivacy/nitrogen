@@ -6,7 +6,7 @@ use std::io::Write;
 use std::path::Path;
 use std::time::Duration;
 
-use aws_sdk_cloudformation::{config::Builder, Client, RetryConfig};
+use aws_sdk_cloudformation::Client;
 use clap::{Parser, Subcommand};
 use failure::Error;
 use nitrogen::commands::{build, delete, deploy, setup};
@@ -125,14 +125,7 @@ async fn main() -> Result<(), Error> {
             let instance_type = instance_type.to_string();
             let setup_template = SETUP_TEMPLATE.to_string();
             let shared_config = aws_config::from_env().load().await;
-
-            // Construct a client with customized retry configuration.
-            let tries = 3;
-            let client = Client::from_conf(
-                Builder::from(&shared_config)
-                    .retry_config(RetryConfig::standard().with_max_attempts(tries))
-                    .build(),
-            );
+            let client = Client::new(&shared_config);
 
             info!("Spinning up enclave instance '{}'.", name);
             let outputs = setup(
