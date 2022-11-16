@@ -10,7 +10,7 @@ use std::{
     fs,
     process::{Command, Output},
 };
-use tracing::{debug, info, instrument, error};
+use tracing::{debug, error, info, instrument};
 
 async fn get_instance_url(stack: &Stack) -> Result<String, Error> {
     let outputs: Vec<&CloudOutput> = stack
@@ -195,9 +195,7 @@ fn check_enclave_status(ssh_key: &str, url: &str) -> Result<(), Error> {
     let json: Value = serde_json::from_slice(&describe_out.stdout)
         .expect("Could not parse response from AWS as json.");
 
-    let enclave_list = json
-        .as_array()
-        .unwrap();
+    let enclave_list = json.as_array().unwrap();
 
     let enclave = match enclave_list.get(0) {
         None => return Err(failure::err_msg(format!("No running enclaves detected."))),
@@ -205,13 +203,19 @@ fn check_enclave_status(ssh_key: &str, url: &str) -> Result<(), Error> {
     };
 
     let state = match enclave.get("State") {
-        None => return Err(failure::err_msg(format!("Enclave detected, but has no state description."))),
+        None => {
+            return Err(failure::err_msg(format!(
+                "Enclave detected, but has no state description."
+            )))
+        }
         Some(current_state) => current_state.as_str(),
     };
 
     match state {
         Some("RUNNING") => Ok(()),
-        _ => Err(failure::err_msg(format!("Enclave detected, but not in running state."))),
+        _ => Err(failure::err_msg(format!(
+            "Enclave detected, but not in running state."
+        ))),
     }
 }
 
