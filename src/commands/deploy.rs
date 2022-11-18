@@ -12,7 +12,7 @@ use std::{
 };
 use tracing::{debug, error, info, instrument};
 
-async fn get_instance_url(stack: &Stack) -> Result<String, Error> {
+pub(crate) async fn get_instance_url(stack: &Stack) -> Result<String, Error> {
     let outputs: Vec<&CloudOutput> = stack
         .outputs()
         .unwrap_or_default()
@@ -180,8 +180,7 @@ fn run_eif(
     Ok(run_out)
 }
 
-fn check_enclave_status(ssh_key: &str, url: &str) -> Result<(), Error> {
-    info!("Check enclave status...");
+pub(crate) fn describe_enclave(ssh_key: &str, url: &str) -> Result<Value, Error> {
     let describe_out = Command::new("ssh")
         .args([
             "-i",
@@ -213,7 +212,13 @@ fn check_enclave_status(ssh_key: &str, url: &str) -> Result<(), Error> {
         None => return Err(failure::err_msg("Enclave not created.")),
     };
 
-    match description.get("State") {
+    Ok(description.clone())
+}
+
+fn check_enclave_status(ssh_key: &str, url: &str) -> Result<(), Error> {
+    info!("Check enclave status...");
+
+    match describe_enclave(ssh_key, url)?.get("State") {
         // According to the docs, the state is either "running" or "terminating"
         // https://docs.aws.amazon.com/enclaves/latest/user/cmd-nitro-describe-enclaves.html
         Some(x) if x.eq(&json!("RUNNING")) => Ok(()),
