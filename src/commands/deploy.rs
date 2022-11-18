@@ -157,6 +157,8 @@ fn run_eif(
         .output()?;
     debug!(stdout=?run_out);
 
+    info!(public_dns = url, "EIF is now running");
+
     if !run_out.status.success() {
         return Err(failure::err_msg(format!(
             "failed to run enclave{:?}",
