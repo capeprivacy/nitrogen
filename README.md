@@ -65,12 +65,17 @@ $ nitrogen build examples/nginx/
 
 ```sh
 $ nitrogen deploy nitrogen-test ~/.ssh/id_rsa
-> Listening: ec2-1-234-56-789.compute-1.amazonaws.com:5000
+> EIF is now running public_dns="ec2-1-234-56-789.compute-1.amazonaws.com:5000"
 ```
 
 ```sh
 $ curl http://ec2-1-234-56-789.compute-1.amazonaws.com:5000/
-> Hello World
+> <!DOCTYPE html>
+<html>
+    <head>
+        <title>Hello Nitrogen!</title>
+    </head>
+</html>
 ```
 
 ### Nginx TLS Examples
