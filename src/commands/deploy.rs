@@ -208,7 +208,7 @@ fn check_enclave_status(ssh_key: &str, url: &str) -> Result<(), Error> {
     match description.get("State") {
         Some(x) if x.eq(&json!("RUNNING")) => Ok(()),
         Some(x) => Err(failure::err_msg(format!("Enclave created, but is {}.", x))),
-        None => return Err(failure::err_msg("Enclave created, but unknown state.")),
+        None => Err(failure::err_msg("Enclave created, but unknown state.")),
     }
 }
 
