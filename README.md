@@ -104,7 +104,7 @@ that you have already set in your shell.
 ```
 . sts.sh <ACCOUNT> <USER NAME> <CODE>
 ```
-
+If you wish to deploy the enclave in debug mode, use the "--debug-mode" flag. You can then log into the instance and view the enclave console.
 ## Contributors
 
 Thank you to [@kalebpace](https://github.com/kalebpace) for contributing the name for the [nitrogen crate](https://crates.io/crates/nitrogen).
