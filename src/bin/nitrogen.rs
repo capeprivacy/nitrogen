@@ -174,7 +174,10 @@ async fn main() -> Result<(), Error> {
             info!(eif, "Deploying EIF to {}", name);
             let shared_config = aws_config::from_env().load().await;
             let client = Client::new(&shared_config);
-            let out = deploy(&client, &name, &eif, &ssh_key, cpu_count, memory, debug_mode).await?;
+            let out = deploy(
+                &client, &name, &eif, &ssh_key, cpu_count, memory, debug_mode,
+            )
+            .await?;
             debug!("{:?}", out);
             Ok(())
         }

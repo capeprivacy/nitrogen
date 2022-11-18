@@ -155,7 +155,10 @@ fn run_eif(
         &mem.to_string(),
     ];
     let run_out = match debug {
-        true => Command::new("ssh").args(args).arg("--debug-mode").output()?,
+        true => Command::new("ssh")
+            .args(args)
+            .arg("--debug-mode")
+            .output()?,
         false => Command::new("ssh").args(args).output()?,
     };
     debug!(stdout=?run_out);
