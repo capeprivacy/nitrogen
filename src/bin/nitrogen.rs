@@ -126,6 +126,7 @@ async fn main() -> Result<(), Error> {
             let setup_template = SETUP_TEMPLATE.to_string();
             let shared_config = aws_config::from_env().load().await;
             let client = Client::new(&shared_config);
+
             info!("Spinning up enclave instance '{}'.", name);
             let outputs = setup(
                 &client,

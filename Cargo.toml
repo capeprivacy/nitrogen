@@ -1,6 +1,6 @@
 [package]
 name = "nitrogen"
-version = "0.2.3-alpha.1"
+version = "0.2.4"
 description = "Nitrogen is a tool for deploying web services to AWS Nitro Enclaves."
 license = "Apache-2.0"
 repository = "https://github.com/capeprivacy/nitrogen"
@@ -20,3 +20,4 @@ tracing-subscriber = {version = "0.3", features = ["env-filter"]}
 home = "0.5.4"
 rust-embed = "6.4.2"
 rand = "0.8.5"
+serde_json = "1.0"

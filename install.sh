@@ -15,10 +15,7 @@ main() {
 	else
 		case $(uname -sm) in
 		"Darwin x86_64") target="x86_64-apple-darwin" ;;
-		"Darwin arm64")
-			echo "Error: Official nitrogen builds for Darwin arm64 are not available" 1>&2
-			exit 1
-			;;
+		"Darwin arm64") target="aarch64-apple-darwin" ;;
 		"Linux aarch64")
 			echo "Error: Official nitrogen builds for Linux aarch64 are not available" 1>&2
 			exit 1
