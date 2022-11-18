@@ -4,7 +4,7 @@ use aws_sdk_cloudformation::{
     Client,
 };
 use failure::Error;
-use serde_json::Value;
+use serde_json::{from_slice, json, Value};
 use std::str;
 use std::{
     fs,
@@ -192,24 +192,23 @@ fn check_enclave_status(ssh_key: &str, url: &str) -> Result<(), Error> {
         )));
     };
 
-    let json: Value = serde_json::from_slice(&describe_out.stdout)
-        .expect("Could not parse response from AWS as json.");
-
-    let enclave_list = json.as_array().unwrap();
-
-    let state = match enclave_list.get(0) {
-        None => return Err(failure::err_msg("No running enclaves detected.")),
-        Some(enclave) => match enclave.get("State") {
-            None => return Err(failure::err_msg("Enclave up, but can't determine state.")),
-            Some(current_state) => current_state.as_str(),
-        },
+    let json: Value = match from_slice(&describe_out.stdout) {
+        Ok(json) => json,
+        Err(_) => return Err(failure::err_msg("Could not parse AWS response.")),
     };
 
-    match state {
-        Some("RUNNING") => Ok(()),
-        _ => Err(failure::err_msg(
-            "Enclave detected, but not in running state.",
-        )),
+    let description = match json.as_array() {
+        Some(enclaves) => match enclaves.get(0) {
+            Some(enclave) => enclave,
+            None => return Err(failure::err_msg("Enclave not created.")),
+        },
+        None => return Err(failure::err_msg("Enclave not created.")),
+    };
+
+    match description.get("State") {
+        Some(x) if x.eq(&json!("RUNNING")) => Ok(()),
+        Some(x) => Err(failure::err_msg(format!("Enclave created, but is {}.", x))),
+        None => return Err(failure::err_msg("Enclave created, but unknown state.")),
     }
 }
 
