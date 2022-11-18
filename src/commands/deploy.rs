@@ -136,25 +136,28 @@ fn run_eif(
     mem: &u64,
     ssh_key: &str,
     url: &str,
+    debug: bool,
 ) -> Result<Output, Error> {
     info!("Running EIF in enclave.");
-    let run_out = Command::new("ssh")
-        .args([
-            "-i",
-            ssh_key,
-            format!("ec2-user@{}", url).as_str(),
-            "nitro-cli",
-            "run-enclave",
-            "--enclave-cid",
-            "16",
-            "--eif-path",
-            format!("~/{}", eif_path).as_str(),
-            "--cpu-count",
-            cpu_count.to_string().as_str(),
-            "--memory",
-            mem.to_string().as_str(),
-        ])
-        .output()?;
+    let args = [
+        "-i",
+        ssh_key,
+        &format!("ec2-user@{}", url),
+        "nitro-cli",
+        "run-enclave",
+        "--enclave-cid",
+        "16",
+        "--eif-path",
+        &format!("~/{}", eif_path),
+        "--cpu-count",
+        &cpu_count.to_string(),
+        "--memory",
+        &mem.to_string(),
+    ];
+    let run_out = match debug {
+        true => Command::new("ssh").args(args).arg("--debug-mode").output()?,
+        false => Command::new("ssh").args(args).output()?,
+    };
     debug!(stdout=?run_out);
 
     info!(public_dns = url, "EIF is now running");
@@ -224,6 +227,7 @@ pub async fn deploy(
     ssh_key: &String,
     cpu_count: u64,
     memory: Option<u64>,
+    debug_mode: bool,
 ) -> Result<Output, Error> {
     let this_stack = get_stack(client, stack_name).await?;
     let url = get_instance_url(&this_stack).await?;
@@ -241,5 +245,5 @@ pub async fn deploy(
     terminate_existing_enclaves(ssh_key, &url)?;
     update_allocator_memory(mem, ssh_key, &url)?;
     deploy_eif(eif, ssh_key, &url)?;
-    run_eif(eif, cpu_count, &mem, ssh_key, &url)
+    run_eif(eif, cpu_count, &mem, ssh_key, &url, debug_mode)
 }

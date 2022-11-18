@@ -72,6 +72,9 @@ enum Commands {
         /// Memory in MB to provision for the enclave. Defaults to 5x EIF size if not supplied.
         #[arg(short, long)]
         memory: Option<u64>,
+        /// Debug mode
+        #[arg(long, default_value_t = false)]
+        debug_mode: bool,
     },
 
     /// Delete launched ec2 instance
@@ -166,11 +169,12 @@ async fn main() -> Result<(), Error> {
             ssh_key,
             cpu_count,
             memory,
+            debug_mode,
         } => {
             info!(eif, "Deploying EIF to {}", name);
             let shared_config = aws_config::from_env().load().await;
             let client = Client::new(&shared_config);
-            let out = deploy(&client, &name, &eif, &ssh_key, cpu_count, memory).await?;
+            let out = deploy(&client, &name, &eif, &ssh_key, cpu_count, memory, debug_mode).await?;
             debug!("{:?}", out);
             Ok(())
         }
@@ -239,7 +243,7 @@ async fn main() -> Result<(), Error> {
             info!("Sleeping for 20s to give ec2 instance a chance to boot...");
             tokio::time::sleep(Duration::from_secs(20)).await;
 
-            let out = deploy(&client, &stack_name, eif_path, &private_key, 2, None).await?;
+            let out = deploy(&client, &stack_name, eif_path, &private_key, 2, None, false).await?;
 
             info!("{:?}", out);
 
