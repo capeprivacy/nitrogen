@@ -208,6 +208,8 @@ fn check_enclave_status(ssh_key: &str, url: &str) -> Result<(), Error> {
     };
 
     match description.get("State") {
+        // According to the docs, the state is either "running" or "terminating"
+        // https://docs.aws.amazon.com/enclaves/latest/user/cmd-nitro-describe-enclaves.html
         Some(x) if x.eq(&json!("RUNNING")) => Ok(()),
         Some(x) => Err(failure::err_msg(format!("Enclave created, but is {}.", x))),
         None => Err(failure::err_msg("Enclave created, but unknown state.")),
