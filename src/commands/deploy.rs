@@ -4,11 +4,13 @@ use aws_sdk_cloudformation::{
     Client,
 };
 use failure::Error;
+use serde_json::{from_slice, json, Value};
+use std::str;
 use std::{
     fs,
     process::{Command, Output},
 };
-use tracing::{debug, info, instrument};
+use tracing::{debug, error, info, instrument};
 
 async fn get_instance_url(stack: &Stack) -> Result<String, Error> {
     let outputs: Vec<&CloudOutput> = stack
@@ -56,7 +58,7 @@ fn terminate_existing_enclaves(ssh_key: &str, url: &str) -> Result<(), Error> {
 }
 
 fn update_allocator_memory(memory: u64, ssh_key: &str, url: &str) -> Result<(), Error> {
-    info!(memory, "Updating enclave allocator memory.");
+    info!(memory, "Updating enclave allocator memory (in MB).");
     let sed_out = Command::new("ssh")
         .args([
             "-i",
@@ -104,8 +106,9 @@ fn update_allocator_memory(memory: u64, ssh_key: &str, url: &str) -> Result<(), 
 
 fn deploy_eif(eif_path: &str, ssh_key: &str, url: &str) -> Result<(), Error> {
     info!(
-        "Deploying {} to the instance (this may take some time, especially for larger files)",
-        eif_path
+        "Deploying {} to the instance http://{} (this may take some time, especially for larger files)",
+        eif_path,
+        url
     );
     let scp_out = Command::new("scp")
         .args([
@@ -157,12 +160,59 @@ fn run_eif(
     info!(public_dns = url, "EIF is now running");
 
     if !run_out.status.success() {
-        Err(failure::err_msg(format!(
+        return Err(failure::err_msg(format!(
             "failed to run enclave{:?}",
             run_out
-        )))
-    } else {
-        Ok(run_out)
+        )));
+    }
+
+    match check_enclave_status(ssh_key, url) {
+        Ok(_) => info!("Enclave up and running!"),
+        Err(err) => error!("Error: something went wrong with deployment. {}", err),
+    }
+
+    Ok(run_out)
+}
+
+fn check_enclave_status(ssh_key: &str, url: &str) -> Result<(), Error> {
+    info!("Check enclave status...");
+    let describe_out = Command::new("ssh")
+        .args([
+            "-i",
+            ssh_key,
+            format!("ec2-user@{}", url).as_str(),
+            "nitro-cli",
+            "describe-enclaves",
+        ])
+        .output()?;
+    debug!(stdout=?describe_out);
+
+    if !describe_out.status.success() {
+        return Err(failure::err_msg(format!(
+            "failed to get enclave info{:?}",
+            describe_out
+        )));
+    };
+
+    let json: Value = match from_slice(&describe_out.stdout) {
+        Ok(json) => json,
+        Err(_) => return Err(failure::err_msg("Could not parse AWS response.")),
+    };
+
+    let description = match json.as_array() {
+        Some(enclaves) => match enclaves.get(0) {
+            Some(enclave) => enclave,
+            None => return Err(failure::err_msg("Enclave not created.")),
+        },
+        None => return Err(failure::err_msg("Enclave not created.")),
+    };
+
+    match description.get("State") {
+        // According to the docs, the state is either "running" or "terminating"
+        // https://docs.aws.amazon.com/enclaves/latest/user/cmd-nitro-describe-enclaves.html
+        Some(x) if x.eq(&json!("RUNNING")) => Ok(()),
+        Some(x) => Err(failure::err_msg(format!("Enclave created, but is {}.", x))),
+        None => Err(failure::err_msg("Enclave created, but unknown state.")),
     }
 }
 
