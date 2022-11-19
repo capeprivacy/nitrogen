@@ -3,12 +3,13 @@ use crate::commands::deploy::get_instance_url;
 use crate::commands::setup::get_stack;
 use aws_sdk_cloudformation::Client;
 use failure::Error;
-use std::process::{Command, Output, Stdio};
+use serde_json::json;
+use std::process::{Command, Stdio};
 use std::str;
-use tracing::{debug, info, instrument};
+use tracing::{error, info, instrument};
 
 #[instrument(level = "debug")]
-pub async fn logs(client: &Client, stack_name: &str, ssh_key: &str) -> Result<Output, Error> {
+pub async fn logs(client: &Client, stack_name: &str, ssh_key: &str) -> Result<(), Error> {
     let this_stack = get_stack(client, stack_name).await?;
     let url = get_instance_url(&this_stack).await?;
 
@@ -17,6 +18,11 @@ pub async fn logs(client: &Client, stack_name: &str, ssh_key: &str) -> Result<Ou
         Some(name) => name,
         None => return Err(failure::err_msg("Enclave has no name.")),
     };
+
+    if enclave.get("Flags") != Some(&json!("DEBUG_MODE")) {
+        error!("Enclave is not in debug mode. Please redeploy with \"--debug-mode\" flag.");
+        return Ok(());
+    }
 
     info!("Getting logs from enclave console: {}", url);
     let console_out = Command::new("ssh")
@@ -33,8 +39,6 @@ pub async fn logs(client: &Client, stack_name: &str, ssh_key: &str) -> Result<Ou
         .stderr(Stdio::inherit())
         .output()?;
 
-    debug!(stdout=?console_out);
-
     if !console_out.status.success() {
         return Err(failure::err_msg(format!(
             "failed to get enclave console{:?}",
@@ -42,5 +46,5 @@ pub async fn logs(client: &Client, stack_name: &str, ssh_key: &str) -> Result<Ou
         )));
     }
 
-    Ok(console_out)
+    Ok(())
 }
