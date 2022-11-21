@@ -9,7 +9,7 @@ use std::time::Duration;
 use aws_sdk_cloudformation::Client;
 use clap::{Parser, Subcommand};
 use failure::Error;
-use nitrogen::commands::{build, delete, deploy, setup};
+use nitrogen::commands::{build, delete, deploy, logs, setup};
 use nitrogen::template::SETUP_TEMPLATE;
 use tracing::{debug, info};
 
@@ -75,6 +75,14 @@ enum Commands {
         /// Debug mode
         #[arg(long, default_value_t = false)]
         debug_mode: bool,
+    },
+
+    /// Get the logs from an enclave in debug mode.
+    Logs {
+        /// Name of a Nitrogen-generated CloudFormation stack
+        name: String,
+        /// Filepath to SSH key for the instance
+        ssh_key: String,
     },
 
     /// Delete launched ec2 instance
@@ -179,6 +187,15 @@ async fn main() -> Result<(), Error> {
             )
             .await?;
             debug!("{:?}", out);
+            Ok(())
+        }
+        Commands::Logs { name, ssh_key } => {
+            let shared_config = aws_config::from_env().load().await;
+            let client = Client::new(&shared_config);
+
+            info!("Viewing logs from enclave console '{}'.", name);
+            info!("Enclave has to be in debug mode.");
+            logs(&client, &name, &ssh_key).await?;
             Ok(())
         }
         Commands::Delete { name } => {
