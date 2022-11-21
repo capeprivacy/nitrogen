@@ -1,5 +1,6 @@
+use crate::commands::utilities;
 use aws_sdk_cloudformation::{
-    model::{Parameter, Stack, StackStatus},
+    model::{Parameter, StackStatus},
     output::CreateStackOutput,
     Client,
 };
@@ -36,22 +37,6 @@ async fn setup_stack(
     Ok(stack_output)
 }
 
-pub(crate) async fn get_stack(client: &Client, stack_id: &str) -> Result<Stack, Error> {
-    let resp = client.describe_stacks().stack_name(stack_id).send().await?;
-    let this_stack = resp.stacks().unwrap_or_default().first().unwrap();
-    Ok(this_stack.clone())
-}
-
-pub(crate) async fn check_stack_status(
-    client: &Client,
-    stack_id: &str,
-) -> Result<(StackStatus, String), Error> {
-    let this_stack = get_stack(client, stack_id).await?;
-    let stack_status = this_stack.stack_status().unwrap();
-    let stack_status_reason = this_stack.stack_status_reason().unwrap_or("");
-    Ok((stack_status.clone(), stack_status_reason.to_string()))
-}
-
 #[instrument(level = "debug", skip(client, setup_template))]
 pub async fn setup(
     client: &Client,
@@ -84,7 +69,7 @@ pub async fn setup(
         }
     };
     let (stack_status, stack_status_reason) = loop {
-        let (status, status_reason) = check_stack_status(client, stack_id).await?;
+        let (status, status_reason) = utilities::check_stack_status(client, stack_id).await?;
         tokio::time::sleep(tokio::time::Duration::new(4, 0)).await;
         if status != StackStatus::CreateInProgress {
             break (status, status_reason);
@@ -109,7 +94,7 @@ pub async fn setup(
         }
     }
     // Stack was created successfully, report outputs to stdout
-    let this_stack = get_stack(client, stack_id).await?;
+    let this_stack = utilities::get_stack(client, stack_id).await?;
     // TODO handle missing outputs in this unwrap, maybe w/ warning instead of error?
     let outputs: Vec<(String, String)> = this_stack
         .outputs()

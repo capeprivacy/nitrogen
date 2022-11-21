@@ -1,5 +1,4 @@
-use crate::commands::setup::check_stack_status;
-use crate::commands::setup::get_stack;
+use crate::commands::utilities;
 use aws_sdk_cloudformation::{model::StackStatus, Client};
 use failure::Error;
 use tracing::{info, instrument};
@@ -11,13 +10,13 @@ async fn delete_stack(client: &Client, name: &String) -> Result<(), Error> {
 
 #[instrument(level = "debug", skip(client))]
 pub async fn delete(client: &Client, name: &String) -> Result<(), Error> {
-    let this_stack = get_stack(client, name).await?;
+    let this_stack = utilities::get_stack(client, name).await?;
     let stack_id = this_stack.stack_id().unwrap_or_default();
 
     delete_stack(client, name).await?;
 
     let (stack_status, stack_status_reason) = loop {
-        let (status, status_reason) = check_stack_status(client, stack_id).await?;
+        let (status, status_reason) = utilities::check_stack_status(client, stack_id).await?;
         tokio::time::sleep(tokio::time::Duration::new(4, 0)).await;
         if status != StackStatus::DeleteInProgress {
             break (status, status_reason);
