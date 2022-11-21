@@ -6,7 +6,7 @@ use std::{
     fs,
     process::{Command, Output},
 };
-use tracing::{debug, error, info, instrument};
+use tracing::{debug, info, instrument};
 
 fn terminate_existing_enclaves(ssh_key: &str, url: &str) -> Result<(), Error> {
     info!("Terminating any existing enclaves");
@@ -149,8 +149,8 @@ fn run_eif(
     }
 
     match utilities::check_enclave_status(ssh_key, url) {
-        Ok(_) => info!("Enclave up and running!"),
-        Err(err) => error!("Error: something went wrong with deployment. {}", err),
+        Ok(()) => info!("Enclave up and running!"),
+        Err(err) => return Err(failure::err_msg(format!("Error: something went wrong with deployment. {}", err))),
     }
 
     Ok(run_out)
