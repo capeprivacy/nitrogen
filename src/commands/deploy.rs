@@ -150,7 +150,12 @@ fn run_eif(
 
     match utilities::check_enclave_status(ssh_key, url) {
         Ok(()) => info!("Enclave up and running!"),
-        Err(err) => return Err(failure::err_msg(format!("Error: something went wrong with deployment. {}", err))),
+        Err(err) => {
+            return Err(failure::err_msg(format!(
+                "Error: something went wrong with deployment. {}",
+                err
+            )))
+        }
     }
 
     Ok(run_out)
