@@ -7,10 +7,14 @@ use tokio::process::Command;
 use tracing::{info, instrument};
 
 #[instrument(level = "debug")]
-pub async fn build(dockerfile_dir: &String, eif_name: &String) -> Result<Output, Error> {
+pub async fn build(
+    dockerfile_dir: &String,
+    dockerfile_name: &String,
+    eif_name: &String,
+) -> Result<Output, Error> {
     let dockerdir = PathBuf::from(dockerfile_dir);
     let mut dockerfile_path = PathBuf::from(dockerfile_dir);
-    dockerfile_path.push("Dockerfile");
+    dockerfile_path.push(dockerfile_name);
 
     let out = Command::new("docker")
         .args([
@@ -61,7 +65,8 @@ pub async fn build(dockerfile_dir: &String, eif_name: &String) -> Result<Output,
             stderr_str
         )));
     } else {
-        info!("EIF written to {}/{}.", eif_dir, &eif_name);
+        let path_buf = cwd.join(eif_name);
+        info!("EIF written to {}", path_buf.display());
     }
     Ok(out)
 }
