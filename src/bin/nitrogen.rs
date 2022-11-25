@@ -52,8 +52,13 @@ enum Commands {
     Build {
         /// Dockerfile directory
         dockerfile_dir: String,
+
         /// Output EIF location
-        #[arg(short, long, default_value_t = String::from("./nitrogen.eif"))]
+        #[arg(short, long, default_value_t = String::from("Dockerfile"))]
+        dockerfile_name: String,
+
+        /// Output EIF location
+        #[arg(short, long, default_value_t = String::from("nitrogen.eif"))]
         eif: String,
     },
 
@@ -62,7 +67,7 @@ enum Commands {
         /// Name of a Nitrogen-generated CloudFormation stack
         name: String,
         /// Filepath to EIF
-        #[arg(short, long, default_value_t = String::from("./nitrogen.eif"))]
+        #[arg(short, long, default_value_t = String::from("nitrogen.eif"))]
         eif: String,
         /// Filepath to SSH key for the instance
         ssh_key: String,
@@ -164,10 +169,14 @@ async fn main() -> Result<(), Error> {
         }
         Commands::Build {
             dockerfile_dir,
+            dockerfile_name,
             eif,
         } => {
-            info!(dockerfile_dir, "Building EIF from dockerfile.");
-            let out = build(&dockerfile_dir, &eif).await?;
+            info!(
+                dockerfile_dir,
+                dockerfile_name, "Building EIF from dockerfile."
+            );
+            let out = build(&dockerfile_dir, &dockerfile_name, &eif).await?;
             debug!(docker_output=?out, "Docker output:");
             Ok(())
         }
@@ -258,7 +267,12 @@ async fn main() -> Result<(), Error> {
             // TODO should save this somewhere else than their current directory
             let eif_path = &format!("{}.eif", service);
 
-            build(&proj_dir.to_str().unwrap().to_string(), eif_path).await?;
+            build(
+                &proj_dir.to_str().unwrap().to_string(),
+                &"Dockerfile".to_string(),
+                eif_path,
+            )
+            .await?;
 
             info!("Sleeping for 20s to give ec2 instance a chance to boot...");
             tokio::time::sleep(Duration::from_secs(20)).await;

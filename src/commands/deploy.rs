@@ -216,7 +216,7 @@ pub(crate) fn describe_enclave(ssh_key: &str, url: &str) -> Result<Value, Error>
 }
 
 fn check_enclave_status(ssh_key: &str, url: &str) -> Result<(), Error> {
-    info!("Check enclave status...");
+    info!("Checking enclave status...");
 
     match describe_enclave(ssh_key, url)?.get("State") {
         // According to the docs, the state is either "running" or "terminating"
