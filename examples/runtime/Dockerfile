@@ -21,12 +21,12 @@ RUN git config \
     url."git@github.com:".insteadOf \
     "https://github.com"
 
-COPY go.mod .
-COPY go.sum .
+COPY runtime/go.mod .
+COPY runtime/go.sum .
 
 RUN --mount=type=ssh GOPRIVATE=github.com/capeprivacy/* go mod download
 
-COPY . .
+COPY ./runtime .
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -buildvcs=false -ldflags "-X main.Version=$SERVICE_VERSION" -o bin/runtime ./cmd/runtime
 
 FROM python:3.9-slim-bullseye
@@ -87,7 +87,7 @@ ENV CAPE_CERTFILE=/runtime/server.crt CAPE_KEYFILE=/runtime/server.key
 
 COPY --from=capeprivacy/capejail:release-0c0b492 /bin/capejail /bin/
 
-COPY capejail.sh /bin/capejail.sh
+COPY ./runtime/capejail.sh /bin/capejail.sh
 
 ENV CAPE_STANDALONE_STORAGE=true
 ENV CAPE_STANDALONE_KMS=true
