@@ -16,9 +16,9 @@ $DownloadUrl = if (!$Version) {
   $Splits = $RedirectUrl.Split("/")
   $Version = $Splits.Get($Splits.Length - 1)
 
-  "https://github.com/capeprivacy/nitrogen/releases/latest/download/nitrogen_${Version}_${Target}.zip"
+  "https://github.com/capeprivacy/nitrogen/releases/latest/download/nitrogen_${Version}_${Target}.tar.gz"
 } else {
-  "https://github.com/capeprivacy/nitrogen/releases/download/${Version}/nitrogen_${Version}_${Target}.zip"
+  "https://github.com/capeprivacy/nitrogen/releases/download/${Version}/nitrogen_${Version}_${Target}.tar.gz"
 }
 
 if (!(Test-Path $BinDir)) {
