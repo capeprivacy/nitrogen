@@ -37,8 +37,7 @@ jobs:
         run: |
           cargo build --release
       - name: tar
-        run: |
-          tar --directory=target/release -cf archive.tar.gz nitrogen.exe
+        run: tar --directory=target/release -cf archive.tar.gz nitrogen.exe
       - name: upload
         run: |
           $id = gh api -H "Accept: application/vnd.github+json" /repos/capeprivacy/nitrogen/releases/tags/${{ github.ref_name }} --jq .id
