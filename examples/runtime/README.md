@@ -3,6 +3,19 @@ An example running Cape runtime via Nitrogen
 
 ## Requirements
 Access to capejail and kmstool images in Dockerhub.
+```
+docker login
+```
+
+Enable Docker kit
+```
+export DOCKER_BUILDKIT=1
+```
+
+Fetch the runtime submodule
+```
+git submodule update --init --recursive
+```
 
 ## Running
 Needs a local socat instance to run alongside the enclave executable. 

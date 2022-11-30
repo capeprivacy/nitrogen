@@ -1,0 +1,3 @@
+[submodule "examples/runtime/runtime"]
+	path = examples/runtime/runtime
+	url = git@github.com:capeprivacy/runtime.git
