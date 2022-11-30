@@ -24,7 +24,7 @@ RUN git config \
 COPY runtime/go.mod .
 COPY runtime/go.sum .
 
-RUN --mount=type=ssh GOPRIVATE=github.com/capeprivacy/* go mod download
+RUN go mod download
 
 COPY ./runtime .
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -buildvcs=false -ldflags "-X main.Version=$SERVICE_VERSION" -o bin/runtime ./cmd/runtime
@@ -62,7 +62,16 @@ RUN mkdir /chroot && \
 RUN apt update && \
     apt install -y \
         sudo \
+        wget \
+        socat \
     && apt clean
+
+RUN echo "socat --version"
+# RUN wget http://www.dest-unreach.org/socat/download/socat-1.7.4.3.tar.gz
+# RUN tar -xzf socat-1.7.4.3.tar.gz
+# RUN cd socat-1.7.4.3
+# RUN ./configure && make && sudo make install
+# RUN sudo mv socat /usr/local/bin/socat
 
 RUN useradd runtime
 
@@ -75,7 +84,7 @@ RUN echo "%sudo    ALL=(ALL:ALL) NOPASSWD: /bin/capejail.sh" >> /etc/sudoers
 
 COPY --from=builder /app/bin/runtime ./bin/runtime
 
-COPY --from=builder ./launch.py /runtime/.
+COPY ./runtime/launch.py /runtime/.
 
 RUN chown -R runtime:runtime /runtime
 
@@ -95,10 +104,8 @@ ENV CAPE_STANDALONE_LIFECYCLE=true
 ENV CAPE_STANDALONE_EPHEMERAL=false
 
 
-COPY run.sh ./
-RUN ["chmod", "+x", "./run.sh"]
+COPY run.sh /run.sh
 
-COPY app.sh ./
-RUN ["chmod", "+x", "./app.sh"]
+COPY app.sh /app.sh
 
 CMD ["/bin/sh", "/run.sh"]
