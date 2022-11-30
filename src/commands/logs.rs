@@ -1,4 +1,4 @@
-use crate::commands::utilities;
+use crate::cf_utilities as utilities;
 use aws_sdk_cloudformation::Client;
 use failure::Error;
 use serde_json::json;

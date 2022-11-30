@@ -3,7 +3,6 @@ pub mod delete;
 pub mod deploy;
 pub mod logs;
 pub mod setup;
-pub mod utilities;
 pub use self::build::build;
 pub use self::delete::delete;
 pub use self::deploy::deploy;
