@@ -1,6 +1,4 @@
-use crate::commands::deploy::describe_enclave;
-use crate::commands::deploy::get_instance_url;
-use crate::commands::setup::get_stack;
+use crate::cf_utilities as utilities;
 use aws_sdk_cloudformation::Client;
 use failure::Error;
 use serde_json::json;
@@ -10,10 +8,10 @@ use tracing::{error, info, instrument};
 
 #[instrument(level = "debug")]
 pub async fn logs(client: &Client, stack_name: &str, ssh_key: &str) -> Result<(), Error> {
-    let this_stack = get_stack(client, stack_name).await?;
-    let url = get_instance_url(&this_stack).await?;
+    let this_stack = utilities::get_stack(client, stack_name).await?;
+    let url = utilities::get_instance_url(&this_stack).await?;
 
-    let enclave = describe_enclave(ssh_key, &url)?;
+    let enclave = utilities::describe_enclave(ssh_key, &url)?;
     let enclave_name = match enclave.get("EnclaveName") {
         Some(name) => name,
         None => return Err(failure::err_msg("Enclave has no name.")),
