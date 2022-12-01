@@ -67,11 +67,6 @@ RUN apt update && \
     && apt clean
 
 RUN echo "socat --version"
-# RUN wget http://www.dest-unreach.org/socat/download/socat-1.7.4.3.tar.gz
-# RUN tar -xzf socat-1.7.4.3.tar.gz
-# RUN cd socat-1.7.4.3
-# RUN ./configure && make && sudo make install
-# RUN sudo mv socat /usr/local/bin/socat
 
 RUN useradd runtime
 
@@ -102,7 +97,7 @@ ENV CAPE_STANDALONE_STORAGE=true
 ENV CAPE_STANDALONE_KMS=true
 ENV CAPE_STANDALONE_LIFECYCLE=true
 ENV CAPE_STANDALONE_EPHEMERAL=false
-
+ENV CAPE_CERTFILE=/sentinel/server.crt CAPE_KEYFILE=/sentinel/server.key
 
 COPY run.sh /run.sh
 
