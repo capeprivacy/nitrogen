@@ -48,7 +48,7 @@ pub async fn build(
             "-v",
             "/var/run/docker.sock:/var/run/docker.sock",
             "-v",
-            &format!("{}:/root/build", eif_dir,),
+            &format!("{}:/root/build", eif_dir),
             "capeprivacy/eif-builder:latest",
             "build-enclave",
             "--docker-uri",
