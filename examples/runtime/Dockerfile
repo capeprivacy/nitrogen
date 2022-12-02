@@ -96,8 +96,8 @@ COPY ./runtime/capejail.sh /bin/capejail.sh
 ENV CAPE_STANDALONE_STORAGE=true
 ENV CAPE_STANDALONE_KMS=true
 ENV CAPE_STANDALONE_LIFECYCLE=true
+ENV CAPE_STANDALONE_VALIDATOR=true
 ENV CAPE_STANDALONE_EPHEMERAL=false
-ENV CAPE_CERTFILE=/sentinel/server.crt CAPE_KEYFILE=/sentinel/server.key
 
 COPY run.sh /run.sh
 
