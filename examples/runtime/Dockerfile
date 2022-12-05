@@ -93,6 +93,8 @@ COPY --from=capeprivacy/capejail:release-0c0b492 /bin/capejail /bin/
 
 COPY ./runtime/capejail.sh /bin/capejail.sh
 
+
+ENV CAPE_PORT=5000
 ENV CAPE_STANDALONE_STORAGE=true
 ENV CAPE_STANDALONE_KMS=true
 ENV CAPE_STANDALONE_LIFECYCLE=true
