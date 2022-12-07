@@ -6,7 +6,7 @@
 
 [![Discord](https://img.shields.io/discord/1027271440061435975.svg?logo=discord)](https://discord.gg/S8WMGUg8ab)
 
-Nitrogen is a tool for deploying web services to AWS Nitro Enclaves. Given a dockerfile and an ssh key, Nitrogen will spin up an EC2, configure the network, and build and deploy your web service. You get back a hostname that’s ready to go. Nitrogen is fully open source and it comes with pre-built scripts for deploying popular services like Nginx, Redis, and MongoDB.
+Nitrogen is a tool for deploying web services to AWS Nitro Enclaves. Given a dockerfile and an ssh key, Nitrogen will spin up an EC2, configure the network, and build and deploy your web service. You get back a hostname that's ready to go. Nitrogen is fully open source and it comes with pre-built scripts for deploying popular services like Nginx, Redis, and MongoDB.
 
 ## Install
 
