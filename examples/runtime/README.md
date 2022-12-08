@@ -31,6 +31,23 @@ openssl ecparam -genkey -name secp384r1 -out server.key
 openssl req -new -x509 -sha256 -key server.key -out server.crt -days 3650
 ```
 
+## Add extra dependencies
+For the OCR example (in `doctr/`):
+```sh
+python -m venv venv
+. venv/bin/activate
+pip install torch torchvision --extra-index-url https://download.pytorch.org/whl/cpu
+pip install python-doctr
+deactivate
+cp venv/lib/python3.9/site-packages/* runtime/dependencies/
+```
+
+Before deploying the function:
+```sh
+python doctr/app.py
+```
+This downloads and caches the OCR models into the `doctr/` deploy folder.
+
 
 ### Using port 5000
 The setup for the ec2 instance points to port 5000, so the socat instance

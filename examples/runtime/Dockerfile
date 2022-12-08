@@ -36,6 +36,13 @@ WORKDIR /runtime
 # Add some pre-bundled python libraries.
 RUN pip install python-dotenv
 RUN pip install pyjwt[crypto]
+RUN apt update && \
+    apt install -y \
+    ffmpeg \
+    libsm6 \
+    libxext6 \
+    && apt clean
+
 
 # create chroot environment for jail
 RUN adduser jailuser
