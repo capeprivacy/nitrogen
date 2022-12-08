@@ -79,6 +79,10 @@ RUN echo "%sudo    ALL=(ALL:ALL) NOPASSWD: /bin/capejail.sh" >> /etc/sudoers
 
 COPY --from=builder /app/bin/runtime ./bin/runtime
 
+COPY ./runtime/dependencies /dependencies
+RUN chown -R runtime:runtime /dependencies
+
+
 COPY ./runtime/launch.py /runtime/.
 
 RUN chown -R runtime:runtime /runtime
