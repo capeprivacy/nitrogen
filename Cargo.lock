@@ -854,7 +854,7 @@ dependencies = [
 
 [[package]]
 name = "nitrogen"
-version = "0.2.5"
+version = "0.2.6-alpha.1"
 dependencies = [
  "aws-config",
  "aws-sdk-cloudformation",
