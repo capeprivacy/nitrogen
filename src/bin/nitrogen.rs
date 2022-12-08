@@ -9,7 +9,7 @@ use std::time::Duration;
 use aws_sdk_cloudformation::Client;
 use clap::{Parser, Subcommand};
 use failure::Error;
-use nitrogen::commands::{build, delete, deploy, logs, setup};
+use nitrogen::commands::{build, delete, deploy, key, logs, setup};
 use nitrogen::template::SETUP_TEMPLATE;
 use tracing::{debug, info};
 
@@ -112,6 +112,13 @@ enum Commands {
         /// IP address range that can be used to SSH to the EC2 instance.
         #[arg(short, long, default_value_t = String::from("0.0.0.0/0"))]
         ssh_location: String,
+    },
+    Key {
+        principal_arn: String,
+
+        /// input EIF location
+        #[arg(short, long, default_value_t = String::from("nitrogen.eif"))]
+        eif: String,
     },
 }
 
@@ -278,6 +285,16 @@ async fn main() -> Result<(), Error> {
             tokio::time::sleep(Duration::from_secs(20)).await;
 
             let out = deploy(&client, &stack_name, eif_path, &private_key, 2, None, false).await?;
+
+            info!("{:?}", out);
+
+            Ok(())
+        }
+        Commands::Key { principal_arn, eif } => {
+            let shared_config = aws_config::from_env().load().await;
+            let client = aws_sdk_kms::Client::new(&shared_config);
+
+            let out = key(&client, &principal_arn, &eif).await?;
 
             info!("{:?}", out);
 
