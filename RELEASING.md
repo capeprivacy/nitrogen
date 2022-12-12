@@ -12,6 +12,10 @@ Run the following to actually upload to cargo:
 cargo publish
 ```
 
+Next you need to manually make the release in github from the tag. This will kick off the build process
+to build all the releases assets and store them on the release in github. Also at this stage we can auto-generate
+the releases notes during the release creation process.
+
 Afterwards we need to publish an alpha version to prepare for the next release.
 
 ```
