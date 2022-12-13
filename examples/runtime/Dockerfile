@@ -36,6 +36,13 @@ WORKDIR /runtime
 # Add some pre-bundled python libraries.
 RUN pip install python-dotenv
 RUN pip install pyjwt[crypto]
+RUN apt update && \
+    apt install -y \
+    ffmpeg \
+    libsm6 \
+    libxext6 \
+    && apt clean
+
 
 # create chroot environment for jail
 RUN adduser jailuser
@@ -79,6 +86,13 @@ RUN echo "%sudo    ALL=(ALL:ALL) NOPASSWD: /bin/capejail.sh" >> /etc/sudoers
 
 COPY --from=builder /app/bin/runtime ./bin/runtime
 
+<<<<<<< HEAD
+=======
+COPY ./runtime/dependencies /dependencies
+RUN chown -R runtime:runtime /dependencies
+
+
+>>>>>>> a2d48448309bd747745382f131a32e2b3c393a2c
 COPY ./runtime/launch.py /runtime/.
 
 RUN chown -R runtime:runtime /runtime
