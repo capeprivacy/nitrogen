@@ -20,7 +20,7 @@ pub async fn build(
         .args([
             "build",
             "-t",
-            "nitrogen-build",
+            "runtime",
             "--platform",
             "linux/amd64",
             dockerdir.to_str().unwrap(),
@@ -52,9 +52,13 @@ pub async fn build(
             "capeprivacy/eif-builder:latest",
             "build-enclave",
             "--docker-uri",
-            "nitrogen-build",
+            "runtime",
             "--output-file",
             &format!("/root/build/{}", eif_name),
+            "--private-key",
+            "/root/build/signer.key",
+            "--signing-certificate",
+            "/root/build/signer.pem",
         ])
         .output()
         .await?;
