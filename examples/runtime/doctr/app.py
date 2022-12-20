@@ -14,3 +14,9 @@ def cape_handler(pdf_bytes: bytes):
     result = OCR_MODEL(doc)
     transcript = result.render()
     return transcript.encode()
+
+
+if __name__ == "__main__":
+    result = cape_handler("../equifax_sample_100_pages.pdf")
+    print(result)
+
