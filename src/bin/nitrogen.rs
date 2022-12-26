@@ -31,45 +31,45 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Commands {
-    /// Provision nitro-enabled ec2 instances
+    /// Provision Nitro Enclaves-enabled EC2 instance
     Setup {
         /// Name of the CloudFormation stack (& its provisioned EC2 instance)
         name: String,
-        /// File of public key to be used for ssh with the provisioned instance
+        /// Filepath of SSH public key to be used as EC2 instance key pair
         public_key: String,
-        /// EC2-instance type. Must be Nitro compatible
+        /// EC2 instance type. Must be Nitro Enclaves compatible
         #[arg(long, default_value_t = String::from("m5a.xlarge"))]
         instance_type: String,
-        /// EC2-instance port for socat enclave connection
+        /// EC2 instance port for socat enclave connection
         #[arg(short, long, default_value_t = 5000)]
         port: usize,
-        /// IP address range that can be used to SSH to the EC2 instance.
+        /// Source CIDR range for inbound SSH whitelist on the EC2 instance
         #[arg(short, long, default_value_t = String::from("0.0.0.0/0"))]
         ssh_location: String,
     },
 
-    /// Build a Nitro EIF from a given Dockerfile
+    /// Build a enclave image file (EIF) from a given Dockerfile
     Build {
         /// Dockerfile directory
         dockerfile_dir: String,
 
-        /// Output EIF location
+        /// Dockerfile filename
         #[arg(short, long, default_value_t = String::from("Dockerfile"))]
         dockerfile_name: String,
 
-        /// Output EIF location
+        /// Output EIF filepath
         #[arg(short, long, default_value_t = String::from("nitrogen.eif"))]
         eif: String,
     },
 
-    /// Deploy an EIF to a provisioned nitro ec2 instance
+    /// Deploy an EIF to a provisioned EC2 instance
     Deploy {
         /// Name of a Nitrogen-generated CloudFormation stack
         name: String,
-        /// Filepath to EIF
+        /// Filepath of EIF
         #[arg(short, long, default_value_t = String::from("nitrogen.eif"))]
         eif: String,
-        /// Filepath to SSH key for the instance
+        /// Filepath of SSH private key of the EC2 instance
         ssh_key: String,
         /// Number of CPUs to provision for the enclave
         #[arg(short, long, default_value_t = 2)]
@@ -86,7 +86,7 @@ enum Commands {
     Logs {
         /// Name of a Nitrogen-generated CloudFormation stack
         name: String,
-        /// Filepath to SSH key for the instance
+        /// Filepath of SSH private key of the EC2 instance
         ssh_key: String,
     },
 
@@ -99,17 +99,17 @@ enum Commands {
     Start {
         /// Name of the service to deploy with nitrogen
         service: String,
-        /// File of public key to be used for ssh with the provisioned instance
+        /// Filepath of SSH public key to be used as EC2 instance key pair
         public_key: String,
-        /// File of private key to be used for scp/ssh when deploying EIF
+        /// Filepath of SSH private key to be used for scp/ssh when deploying EIF
         private_key: String,
-        /// EC2-instance type. Must be Nitro compatible
+        /// EC2 instance type. Must be Nitro Enclaves compatible
         #[arg(long, default_value_t = String::from("m5a.xlarge"))]
         instance_type: String,
-        /// EC2-instance port for socat enclave connection
+        /// EC2 instance port for socat enclave connection
         #[arg(short, long, default_value_t = 5000)]
         port: usize,
-        /// IP address range that can be used to SSH to the EC2 instance.
+        /// Source CIDR range for inbound SSH whitelist on the EC2 instance
         #[arg(short, long, default_value_t = String::from("0.0.0.0/0"))]
         ssh_location: String,
     },
