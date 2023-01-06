@@ -33,8 +33,8 @@ fn terminate_existing_enclaves(ssh_key: &str, url: &str) -> Result<(), Error> {
     }
 }
 
-fn update_allocator_memory(memory: u64, ssh_key: &str, url: &str) -> Result<(), Error> {
-    info!(memory, "Updating enclave allocator memory (in MB).");
+fn update_allocator_memory_and_cpu_count(memory: u64, cpu_count: u64, ssh_key: &str, url: &str) -> Result<(), Error> {
+    info!(memory, cpu_count, "Updating enclave allocator memory (in MB) and CPU count.");
     let sed_out = Command::new("ssh")
         .args([
             "-i",
@@ -43,7 +43,8 @@ fn update_allocator_memory(memory: u64, ssh_key: &str, url: &str) -> Result<(), 
             "sudo",
             "sed",
             "-i",
-            format!("'s/memory_mib: .*/memory_mib: {}/g'", memory).as_str(),
+            format!("-e 's/memory_mib: .*/memory_mib: {}/g'", memory).as_str(),
+            format!("-e 's/cpu_count: .*/cpu_count: {}/g'", cpu_count).as_str(),
             "/etc/nitro_enclaves/allocator.yaml",
         ])
         .output()?;
@@ -108,7 +109,7 @@ fn deploy_eif(eif_path: &str, ssh_key: &str, url: &str) -> Result<(), Error> {
 
 fn run_eif(
     eif_path: &str,
-    cpu_count: u64,
+    cpu_count: &u64,
     mem: &u64,
     ssh_key: &str,
     url: &str,
@@ -185,7 +186,7 @@ pub async fn deploy(
 
     info!("Using instance URL {}...", url);
     terminate_existing_enclaves(ssh_key, &url)?;
-    update_allocator_memory(mem, ssh_key, &url)?;
+    update_allocator_memory_and_cpu_count(mem, cpu_count, ssh_key, &url)?;
     deploy_eif(eif, ssh_key, &url)?;
-    run_eif(eif, cpu_count, &mem, ssh_key, &url, debug_mode)
+    run_eif(eif, &cpu_count, &mem, ssh_key, &url, debug_mode)
 }
