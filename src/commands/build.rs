@@ -2,7 +2,7 @@ use failure::Error;
 use home;
 use std::env;
 use std::path::PathBuf;
-use std::process::Output;
+use std::process::ExitStatus;
 use tokio::process::Command;
 use tracing::{info, instrument};
 
@@ -11,12 +11,12 @@ pub async fn build(
     dockerfile_dir: &String,
     dockerfile_name: &String,
     eif_name: &String,
-) -> Result<Output, Error> {
+) -> Result<ExitStatus, Error> {
     let dockerdir = PathBuf::from(dockerfile_dir);
     let mut dockerfile_path = PathBuf::from(dockerfile_dir);
     dockerfile_path.push(dockerfile_name);
 
-    let out = Command::new("docker")
+    let image_builder_process = Command::new("docker")
         .args([
             "build",
             "-t",
@@ -27,20 +27,17 @@ pub async fn build(
             "-f",
             dockerfile_path.to_str().unwrap(),
         ])
-        .output()
+        .spawn()?
+        .wait()
         .await?;
-    if !out.status.success() {
-        let stderr_str = std::str::from_utf8(&out.stderr)?;
-        return Err(failure::err_msg(format!(
-            "Docker build error: {:#?}",
-            stderr_str
-        )));
+    if !image_builder_process.success() {
+        return Err(failure::err_msg("Docker nitrogen-build error."));
     }
 
     let h = home::home_dir().unwrap_or_default();
     let cwd = env::current_dir()?;
     let eif_dir = cwd.to_str().unwrap_or_default();
-    let out = Command::new("docker")
+    let eif_builder_process = Command::new("docker")
         .args([
             "run",
             "-v",
@@ -56,17 +53,14 @@ pub async fn build(
             "--output-file",
             &format!("/root/build/{}", eif_name),
         ])
-        .output()
+        .spawn()?
+        .wait()
         .await?;
-    if !out.status.success() {
-        let stderr_str = std::str::from_utf8(&out.stderr)?;
-        return Err(failure::err_msg(format!(
-            "Docker build error: {:#?}",
-            stderr_str
-        )));
+    if !eif_builder_process.success() {
+        return Err(failure::err_msg("Docker eif-builder error."));
     } else {
         let path_buf = cwd.join(eif_name);
         info!("EIF written to {}", path_buf.display());
     }
-    Ok(out)
+    Ok(eif_builder_process)
 }
