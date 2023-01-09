@@ -1,7 +1,7 @@
 use failure::Error;
 use home;
-use std::path::PathBuf;
 use std::env;
+use std::path::PathBuf;
 use std::process::ExitStatus;
 use tokio::process::Command;
 use tracing::{info, instrument};
@@ -28,7 +28,8 @@ pub async fn build(
             dockerfile_path.to_str().unwrap(),
         ])
         .spawn()?
-        .wait().await?;
+        .wait()
+        .await?;
     if !image_builder_process.success() {
         return Err(failure::err_msg("Docker nitrogen-build error."));
     }
@@ -53,7 +54,8 @@ pub async fn build(
             &format!("/root/build/{}", eif_name),
         ])
         .spawn()?
-        .wait().await?;
+        .wait()
+        .await?;
     if !eif_builder_process.success() {
         return Err(failure::err_msg("Docker eif-builder error."));
     } else {

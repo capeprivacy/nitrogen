@@ -33,8 +33,16 @@ fn terminate_existing_enclaves(ssh_key: &str, url: &str) -> Result<(), Error> {
     }
 }
 
-fn update_allocator_memory_and_cpu_count(memory: u64, cpu_count: u64, ssh_key: &str, url: &str) -> Result<(), Error> {
-    info!(memory, cpu_count, "Updating enclave allocator memory (in MB) and CPU count.");
+fn update_allocator_memory_and_cpu_count(
+    memory: u64,
+    cpu_count: u64,
+    ssh_key: &str,
+    url: &str,
+) -> Result<(), Error> {
+    info!(
+        memory,
+        cpu_count, "Updating enclave allocator memory (in MB) and CPU count."
+    );
     let sed_out = Command::new("ssh")
         .args([
             "-i",
