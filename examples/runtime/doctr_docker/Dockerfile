@@ -34,7 +34,7 @@ ENV PYTHONUNBUFFERED 1
 # add execution dependencies
 ADD equifax_sample_100_pages.pdf /
 ADD app.py /
-ADD ./models /
+# ADD ./models /
 
 WORKDIR "/"
 # ENTRYPOINT [ "python", "app.py" ]
