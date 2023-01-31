@@ -32,7 +32,7 @@ openssl req -new -x509 -sha256 -key server.key -out server.crt -days 3650
 ```
 
 ## Add extra dependencies
-For the OCR example (in `doctr/`):
+For the OCR example (in `doctr/`) wih Torch:
 ```sh
 python -m venv venv
 . venv/bin/activate
@@ -41,6 +41,20 @@ pip install python-doctr
 deactivate
 cp venv/lib/python3.9/site-packages/* runtime/dependencies/
 ```
+
+For the OCR example (in `doctr/`) wih TensorFlow:
+```sh
+python -m venv venv
+. venv/bin/activate
+pip install tensorflow-cpu==2.9.0 
+pip install tensorflow-addons==0.17.1
+pip install tf2onnx==1.9.2   
+pip install python-doctr==0.6.0
+deactivate
+cp venv/lib/python3.9/site-packages/* runtime/dependencies/
+```
+
+
 
 Before deploying the function:
 ```sh
