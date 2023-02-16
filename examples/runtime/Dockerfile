@@ -28,21 +28,11 @@ RUN go mod download
 
 COPY ./runtime .
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -buildvcs=false -ldflags "-X main.Version=$SERVICE_VERSION" -o bin/runtime ./cmd/runtime
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -buildvcs=false -ldflags "-X main.Version=$SERVICE_VERSION" -o bin/capejail ./cmd/jail
 
 FROM python:3.9-slim-bullseye
 
 WORKDIR /runtime
-
-# Add some pre-bundled python libraries.
-RUN pip install python-dotenv
-RUN pip install pyjwt[crypto]
-RUN apt update && \
-    apt install -y \
-    ffmpeg \
-    libsm6 \
-    libxext6 \
-    && apt clean
-
 
 # create chroot environment for jail
 RUN adduser jailuser
@@ -71,6 +61,7 @@ RUN apt update && \
         sudo \
         wget \
         socat \
+	strace \
     && apt clean
 
 RUN echo "socat --version"
@@ -85,14 +76,9 @@ RUN usermod -aG sudo runtime
 RUN echo "%sudo    ALL=(ALL:ALL) NOPASSWD: /bin/capejail.sh" >> /etc/sudoers
 
 COPY --from=builder /app/bin/runtime ./bin/runtime
+COPY --from=builder /app/bin/capejail /bin/capejail
+COPY --from=builder /app/seccomp.yml /bin/seccomp.yml
 
-<<<<<<< HEAD
-=======
-COPY ./runtime/dependencies /dependencies
-RUN chown -R runtime:runtime /dependencies
-
-
->>>>>>> a2d48448309bd747745382f131a32e2b3c393a2c
 COPY ./runtime/launch.py /runtime/.
 
 RUN chown -R runtime:runtime /runtime
@@ -103,8 +89,6 @@ USER runtime
 COPY --chown=runtime:runtime server.key server.crt /runtime/
 ENV CAPE_CERTFILE=/runtime/server.crt CAPE_KEYFILE=/runtime/server.key
 
-COPY --from=capeprivacy/capejail:release-0c0b492 /bin/capejail /bin/
-
 COPY ./runtime/capejail.sh /bin/capejail.sh
 
 
@@ -113,7 +97,8 @@ ENV CAPE_STANDALONE_STORAGE=true
 ENV CAPE_STANDALONE_KMS=true
 ENV CAPE_STANDALONE_LIFECYCLE=true
 ENV CAPE_STANDALONE_VALIDATOR=true
-ENV CAPE_STANDALONE_EPHEMERAL=false
+ENV CAPE_EPHEMERAL=false
+ENV CAPE_ENABLESUPERVISOR=false
 
 COPY run.sh /run.sh
 
