@@ -40,6 +40,9 @@ enum Commands {
         /// EC2 instance type. Must be Nitro Enclaves compatible
         #[arg(long, default_value_t = String::from("m5a.xlarge"))]
         instance_type: String,
+        /// EC2 root disk size GiBs
+        #[arg(short, long, default_value_t = 8)]
+        disk_size: usize,
         /// EC2 instance port for socat enclave connection
         #[arg(short, long, default_value_t = 5000)]
         port: usize,
@@ -90,12 +93,13 @@ enum Commands {
         ssh_key: String,
     },
 
-    /// Delete launched ec2 instance
+    /// Delete launched EC2 instance
     Delete {
         /// Name of the CloudFormation stack to delete
         name: String,
     },
 
+    /// All in one setup, build, and deploy
     Start {
         /// Name of the service to deploy with nitrogen
         service: String,
@@ -106,6 +110,9 @@ enum Commands {
         /// EC2 instance type. Must be Nitro Enclaves compatible
         #[arg(long, default_value_t = String::from("m5a.xlarge"))]
         instance_type: String,
+        /// EC2 root disk size in GiBs
+        #[arg(short, long, default_value_t = 8)]
+        disk_size: usize,
         /// EC2 instance port for socat enclave connection
         #[arg(short, long, default_value_t = 5000)]
         port: usize,
@@ -133,6 +140,7 @@ async fn main() -> Result<(), Error> {
         Commands::Setup {
             name,
             instance_type,
+            disk_size,
             port,
             public_key,
             ssh_location,
@@ -149,6 +157,7 @@ async fn main() -> Result<(), Error> {
                 &setup_template,
                 &name,
                 &instance_type,
+                &disk_size,
                 &port,
                 &public_key,
                 &ssh_location,
@@ -220,6 +229,7 @@ async fn main() -> Result<(), Error> {
             public_key,
             port,
             instance_type,
+            disk_size,
             ssh_location,
             private_key,
         } => {
@@ -258,6 +268,7 @@ async fn main() -> Result<(), Error> {
                 &setup_template,
                 &stack_name,
                 &instance_type,
+                &disk_size,
                 &port,
                 &public_key,
                 &ssh_location,

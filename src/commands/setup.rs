@@ -15,11 +15,13 @@ fn lift_to_param(key: impl Into<String>, value: impl Into<String>) -> Parameter 
         .build()
 }
 
+#[allow(clippy::too_many_arguments)]
 async fn setup_stack(
     client: &Client,
     setup_template: &String,
     name: &String,
     instance_type: &String,
+    disk_size: &usize,
     port: &usize,
     public_key: &String,
     ssh_location: &String,
@@ -30,6 +32,7 @@ async fn setup_stack(
         .template_body(setup_template)
         .parameters(lift_to_param("InstanceName", name))
         .parameters(lift_to_param("InstanceType", instance_type))
+        .parameters(lift_to_param("DiskSize", disk_size.to_string()))
         .parameters(lift_to_param("Port", port.to_string()))
         .parameters(lift_to_param("PublicKey", public_key))
         .parameters(lift_to_param("SSHLocation", ssh_location));
@@ -38,11 +41,13 @@ async fn setup_stack(
 }
 
 #[instrument(level = "debug", skip(client, setup_template))]
+#[allow(clippy::too_many_arguments)]
 pub async fn setup(
     client: &Client,
     setup_template: &String,
     name: &String,
     instance_type: &String,
+    disk_size: &usize,
     port: &usize,
     public_key_file: &String,
     ssh_location: &String,
@@ -54,6 +59,7 @@ pub async fn setup(
         setup_template,
         name,
         instance_type,
+        disk_size,
         port,
         &public_key,
         ssh_location,

@@ -14,7 +14,7 @@ fn main() {
     );
     let dest_path = Path::new("src").join("template.rs");
 
-    fs::write(&dest_path, cf_template_const).unwrap();
+    fs::write(dest_path, cf_template_const).unwrap();
     println!("cargo:rerun-if-changed=src/templates/setupTemplate.json");
     println!("cargo:rerun-if-changed=build.rs");
 }
