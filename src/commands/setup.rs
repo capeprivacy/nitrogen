@@ -20,6 +20,7 @@ async fn setup_stack(
     setup_template: &String,
     name: &String,
     instance_type: &String,
+    disk_size: &usize,
     port: &usize,
     public_key: &String,
     ssh_location: &String,
@@ -30,6 +31,7 @@ async fn setup_stack(
         .template_body(setup_template)
         .parameters(lift_to_param("InstanceName", name))
         .parameters(lift_to_param("InstanceType", instance_type))
+        .parameters(lift_to_param("DiskSize", disk_size.to_string()))
         .parameters(lift_to_param("Port", port.to_string()))
         .parameters(lift_to_param("PublicKey", public_key))
         .parameters(lift_to_param("SSHLocation", ssh_location));
@@ -43,6 +45,7 @@ pub async fn setup(
     setup_template: &String,
     name: &String,
     instance_type: &String,
+    disk_size: &usize,
     port: &usize,
     public_key_file: &String,
     ssh_location: &String,
@@ -54,6 +57,7 @@ pub async fn setup(
         setup_template,
         name,
         instance_type,
+        disk_size,
         port,
         &public_key,
         ssh_location,

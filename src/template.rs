@@ -28,6 +28,13 @@ pub const SETUP_TEMPLATE: &str = r##"{
       "ConstraintDescription" : "Must be a virtualized Nitro-based instance type with at least two vCPUs, except t3, t3a, t4g, a1, c6g, c6gd, m6g, m6gd, r6g, and r6gd."
     },
 
+    "DiskSize" : {
+      "Description" : "Root disk size for the ec2 instance",
+      "Type": "Number",
+      "MinValue": 8,
+      "MaxValue": 16384
+    },
+
     "SSHLocation" : {
       "Description" : "The IP address range that can be used to SSH to the EC2 instances",
       "Type": "String",
@@ -97,6 +104,15 @@ pub const SETUP_TEMPLATE: &str = r##"{
         },
         "Tags" : [
             {"Key" : "Name", "Value" : { "Ref": "InstanceName"}}
+        ],
+        "BlockDeviceMappings": [
+          {
+            "DeviceName": "/dev/xvda",
+            "Ebs": {
+              "VolumeType": "gp2",
+              "VolumeSize": { "Ref": "DiskSize"}
+            }
+          }
         ],
         "UserData": {
           "Fn::Base64":{
