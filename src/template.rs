@@ -32,7 +32,8 @@ pub const SETUP_TEMPLATE: &str = r##"{
       "Description" : "Root disk size for the ec2 instance",
       "Type": "Number",
       "MinValue": 8,
-      "MaxValue": 16384
+      "MaxValue": 16384,
+      "ConstraintDescription" : "Must be within the supported volume sizes for volume type gp2, may not be lower than the defaulted 8 GiB"
     },
 
     "SSHLocation" : {

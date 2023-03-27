@@ -15,6 +15,7 @@ fn lift_to_param(key: impl Into<String>, value: impl Into<String>) -> Parameter 
         .build()
 }
 
+#[allow(clippy::too_many_arguments)]
 async fn setup_stack(
     client: &Client,
     setup_template: &String,
@@ -40,6 +41,7 @@ async fn setup_stack(
 }
 
 #[instrument(level = "debug", skip(client, setup_template))]
+#[allow(clippy::too_many_arguments)]
 pub async fn setup(
     client: &Client,
     setup_template: &String,

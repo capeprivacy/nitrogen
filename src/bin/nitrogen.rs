@@ -40,7 +40,7 @@ enum Commands {
         /// EC2 instance type. Must be Nitro Enclaves compatible
         #[arg(long, default_value_t = String::from("m5a.xlarge"))]
         instance_type: String,
-        /// EC2 root disk size
+        /// EC2 root disk size GiBs
         #[arg(short, long, default_value_t = 8)]
         disk_size: usize,
         /// EC2 instance port for socat enclave connection
@@ -110,7 +110,7 @@ enum Commands {
         /// EC2 instance type. Must be Nitro Enclaves compatible
         #[arg(long, default_value_t = String::from("m5a.xlarge"))]
         instance_type: String,
-        /// EC2 root disk size
+        /// EC2 root disk size in GiBs
         #[arg(short, long, default_value_t = 8)]
         disk_size: usize,
         /// EC2 instance port for socat enclave connection
